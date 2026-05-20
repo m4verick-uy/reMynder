@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis pendientes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem('theme') || 'dark';</script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #111110;
+      --surface: #1C1C1A;
+      --border: rgba(255,255,255,0.07);
+      --border-md: rgba(255,255,255,0.13);
+      --text: #F0EDE6;
+      --muted: #888880;
+      --subtle: #444440;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-pill: 999px;
+
+      --karate:   #F0997B; --karate-bg:   #4A1B0C; --karate-dark:   #4A1B0C;
+      --facultad: #85B7EB; --facultad-bg: #042C53; --facultad-dark: #042C53;
+      --antel:    #5DCAA5; --antel-bg:    #04342C; --antel-dark:    #04342C;
+      --salud:    #F09595; --salud-bg:    #501313; --salud-dark:    #501313;
+      --personal: #AFA9EC; --personal-bg: #26215C; --personal-dark: #26215C;
+      --padres:   #EF9F27; --padres-bg:   #412402; --padres-dark:   #412402;
+    }
+
+    html[data-theme="light"] {
+      --bg: #F7F5F0;
+      --surface: #FFFFFF;
+      --border: rgba(0,0,0,0.08);
+      --border-md: rgba(0,0,0,0.14);
+      --text: #1A1A18;
+      --muted: #6B6B66;
+      --subtle: #B0AFA8;
+
+      --karate:   #D85A30; --karate-bg:   #FAECE7; --karate-dark:   #4A1B0C;
+      --facultad: #185FA5; --facultad-bg: #E6F1FB; --facultad-dark: #042C53;
+      --antel:    #0F6E56; --antel-bg:    #E1F5EE; --antel-dark:    #04342C;
+      --salud:    #A32D2D; --salud-bg:    #FCEBEB; --salud-dark:    #501313;
+      --personal: #534AB7; --personal-bg: #EEEDFE; --personal-dark: #26215C;
+      --padres:   #854F0B; --padres-bg:   #FAEEDA; --padres-dark:   #412402;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Login screen ── */
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border-md);
+      border-radius: 20px;
+      padding: 3rem 2.5rem;
+      text-align: center;
+      max-width: 360px;
+      width: 100%;
+    }
+
+    .login-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.6rem;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    .login-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      border: 1.5px solid var(--border-md);
+      border-radius: var(--radius-pill);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .login-btn:hover { border-color: var(--text); }
+
+    /* ── Header ── */
+    header {
+      padding: 1.25rem 1.5rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    header h1 {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    header h1 span { color: var(--muted); font-weight: 400; }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid var(--border-md);
+    }
+
+    .user-name {
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .logout-btn {
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      padding: 3px 10px;
+      border: 1px solid var(--border-md);
+      border-radius: var(--radius-pill);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .logout-btn:hover { border-color: var(--salud); color: var(--salud); }
+
+    /* ── Add row ── */
+    .add-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 0.875rem;
+    }
+
+    .add-row input {
+      flex: 1;
+      height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--border-md);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .add-row input::placeholder { color: var(--subtle); }
+    .add-row input:focus { border-color: var(--text); }
+
+    .add-row button {
+      height: 40px;
+      padding: 0 18px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--text);
+      color: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+    }
+
+    .add-row button:hover { opacity: 0.8; }
+
+    .cats-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .cat-pill {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all 0.12s;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.02em;
+    }
+
+    .cat-pill:not(.selected) { opacity: 0.45; }
+    .cat-pill.selected { opacity: 1; border-color: currentColor; }
+
+    .cat-karate   { background: var(--karate-bg);   color: var(--karate);   }
+    .cat-facultad { background: var(--facultad-bg); color: var(--facultad); }
+    .cat-antel    { background: var(--antel-bg);    color: var(--antel);    }
+    .cat-salud    { background: var(--salud-bg);    color: var(--salud);    }
+    .cat-personal { background: var(--personal-bg); color: var(--personal); }
+    .cat-padres   { background: var(--padres-bg);   color: var(--padres);   }
+
+    nav {
+      display: flex;
+      gap: 4px;
+      padding: 0.875rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      overflow-x: auto;
+      align-items: center;
+    }
+
+    nav::-webkit-scrollbar { display: none; }
+
+    .nav-btn {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 13px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-md);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.12s;
+    }
+
+    .nav-btn.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    .sep { width: 1px; height: 16px; background: var(--border-md); margin: 0 4px; flex-shrink: 0; }
+
+    main { padding: 1rem 1.5rem 5rem; max-width: 680px; margin: 0 auto; }
+
+    .empty {
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--subtle);
+      font-size: 14px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      transition: opacity 0.2s;
+    }
+
+    .task-item.done { opacity: 0.5; }
+
+    .check-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-md);
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      color: transparent;
+    }
+
+    .check-btn.done {
+      background: var(--text);
+      border-color: var(--text);
+      color: var(--bg);
+    }
+
+    .check-btn svg { width: 12px; height: 12px; }
+
+    .task-text {
+      flex: 1;
+      font-size: 15px;
+      line-height: 1.4;
+      color: var(--text);
+    }
+
+    .task-text.done {
+      text-decoration: line-through;
+      color: var(--subtle);
+    }
+
+    .badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      flex-shrink: 0;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .del-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      flex-shrink: 0;
+      transition: all 0.12s;
+    }
+
+    .del-btn:hover { background: var(--border); color: var(--text); }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0.75rem 1.5rem;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .clear-btn {
+      font-size: 12px;
+      font-family: 'DM Mono', monospace;
+      padding: 4px 12px;
+      border: 1px solid var(--border-md);
+      border-radius: var(--radius-pill);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: none;
+      transition: all 0.12s;
+    }
+
+    .clear-btn:hover { border-color: var(--salud); color: var(--salud); }
+
+    .theme-btn {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border-md);
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 0;
+      transition: all 0.12s;
+    }
+    .theme-btn:hover { border-color: var(--text); color: var(--text); }
+  </style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen" class="login-screen" style="display:none">
+  <div class="login-card">
+    <h1 class="login-title">pendientes</h1>
+    <p class="login-sub" id="login-sub">Organizá tus tareas, desde cualquier dispositivo.</p>
+    <button class="login-btn" id="login-btn">
+      <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+        <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Continuar con Google
+    </button>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app" style="display:none">
+  <header>
+    <div class="header-top">
+      <h1>pendientes <span id="hcount"></span></h1>
+      <div class="user-info">
+        <button class="theme-btn" id="theme-btn" aria-label="Cambiar tema"></button>
+        <img id="user-avatar" class="avatar" src="" alt="" />
+        <span class="user-name" id="user-name"></span>
+        <button class="logout-btn" id="logout-btn">salir</button>
+      </div>
+    </div>
+    <div class="add-row">
+      <input type="text" id="new-task" placeholder="Nueva tarea..." autocomplete="off" />
+      <button id="add-btn">+ Agregar</button>
+    </div>
+    <div class="cats-row" id="cat-selector">
+      <button class="cat-pill cat-karate selected" data-cat="karate">karate</button>
+      <button class="cat-pill cat-facultad" data-cat="facultad">facultad</button>
+      <button class="cat-pill cat-antel" data-cat="antel">antel</button>
+      <button class="cat-pill cat-salud" data-cat="salud">salud</button>
+      <button class="cat-pill cat-personal" data-cat="personal">personal</button>
+      <button class="cat-pill cat-padres" data-cat="padres">padres</button>
+    </div>
+  </header>
+
+  <nav>
+    <button class="nav-btn active" id="f-all">Todas</button>
+    <button class="nav-btn" id="f-pending">Pendientes</button>
+    <button class="nav-btn" id="f-done">Completadas</button>
+    <div class="sep"></div>
+    <button class="nav-btn cat-pill cat-karate"   id="fc-karate"  >karate</button>
+    <button class="nav-btn cat-pill cat-facultad" id="fc-facultad">facultad</button>
+    <button class="nav-btn cat-pill cat-antel"    id="fc-antel"   >antel</button>
+    <button class="nav-btn cat-pill cat-salud"    id="fc-salud"   >salud</button>
+    <button class="nav-btn cat-pill cat-personal" id="fc-personal">personal</button>
+    <button class="nav-btn cat-pill cat-padres"   id="fc-padres"  >padres</button>
+  </nav>
+
+  <main>
+    <div id="task-list"></div>
+  </main>
+
+  <footer>
+    <span id="counter"></span>
+    <button class="clear-btn" id="clear-btn">limpiar completadas</button>
+  </footer>
+</div>
+
+<script type="module">
+import { initializeApp }                                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
+                                                                  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, onSnapshot, query, orderBy, writeBatch }
+                                                                  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAQM7IW_7XxpCXTJFDZGxUJye8M27O-8zc",
+  authDomain: "pendientes-2c0ea.firebaseapp.com",
+  projectId: "pendientes-2c0ea",
+  storageBucket: "pendientes-2c0ea.firebasestorage.app",
+  messagingSenderId: "656621685090",
+  appId: "1:656621685090:web:029c4da97c27a805b0843b"
+};
+
+const app     = initializeApp(firebaseConfig);
+const auth    = getAuth(app);
+const db      = getFirestore(app);
+
+const CATS    = ['karate','facultad','antel','salud','personal','padres'];
+const LABELS  = { karate:'karate', facultad:'facultad', antel:'antel', salud:'salud', personal:'personal', padres:'padres' };
+
+let tasks        = [];
+let filter       = 'all';
+let catFilter    = null;
+let selectedCat  = 'karate';
+let unsubscribe  = null;
+
+// ── Handle redirect result on page load ─────────────────────────
+getRedirectResult(auth).catch(err => {
+  if (err.code && err.code !== 'auth/no-auth-event') {
+    console.error('Redirect error:', err.code, err.message);
+    const sub = document.getElementById('login-sub');
+    sub.textContent = `Error: ${err.code}`;
+    sub.style.color = 'var(--salud)';
+  }
+});
+
+// ── Auth state ──────────────────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = '';
+    document.getElementById('user-avatar').src = user.photoURL || '';
+    document.getElementById('user-name').textContent = user.displayName || user.email;
+    startListener(user.uid);
+  } else {
+    document.getElementById('login-screen').style.display = '';
+    document.getElementById('app').style.display = 'none';
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    tasks = [];
+  }
+});
+
+function startListener(uid) {
+  if (unsubscribe) unsubscribe();
+  const q = query(collection(db, 'users', uid, 'tasks'), orderBy('createdAt'));
+  unsubscribe = onSnapshot(q, snap => {
+    tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+  });
+}
+
+// ── Task operations ─────────────────────────────────────────────
+async function addTask() {
+  const input = document.getElementById('new-task');
+  const text  = input.value.trim();
+  if (!text) return;
+  const user = auth.currentUser;
+  if (!user) return;
+  input.value = '';
+  await addDoc(collection(db, 'users', user.uid, 'tasks'), {
+    text,
+    done: false,
+    cat: selectedCat,
+    createdAt: Date.now()
+  });
+}
+
+async function toggleTask(id) {
+  const user = auth.currentUser;
+  const t    = tasks.find(t => t.id === id);
+  if (!t || !user) return;
+  await updateDoc(doc(db, 'users', user.uid, 'tasks', id), { done: !t.done });
+}
+
+async function deleteTask(id) {
+  const user = auth.currentUser;
+  if (!user) return;
+  await deleteDoc(doc(db, 'users', user.uid, 'tasks', id));
+}
+
+async function clearDone() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const batch = writeBatch(db);
+  tasks.filter(t => t.done).forEach(t => {
+    batch.delete(doc(db, 'users', user.uid, 'tasks', t.id));
+  });
+  await batch.commit();
+}
+
+// ── Auth actions ─────────────────────────────────────────────────
+async function login() {
+  const provider = new GoogleAuthProvider();
+  const btn = document.getElementById('login-btn');
+  const sub = document.getElementById('login-sub');
+  btn.disabled = true;
+  sub.textContent = 'Conectando...';
+  sub.style.color = '';
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (err) {
+    btn.disabled = false;
+    if (err.code === 'auth/popup-blocked') {
+      sub.textContent = 'Popup bloqueado, redirigiendo a Google...';
+      await signInWithRedirect(auth, provider);
+    } else if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+      sub.textContent = 'Cerraste el popup. Intentá de nuevo.';
+      sub.style.color = 'var(--muted)';
+    } else {
+      sub.textContent = `Error: ${err.code}`;
+      sub.style.color = 'var(--salud)';
+      console.error('Login error:', err.code, err.message);
+    }
+  }
+}
+
+async function logout() {
+  await signOut(auth);
+}
+
+// ── UI helpers ───────────────────────────────────────────────────
+function selectCat(cat) {
+  selectedCat = cat;
+  document.querySelectorAll('#cat-selector .cat-pill').forEach(b => {
+    b.classList.toggle('selected', b.dataset.cat === cat);
+  });
+}
+
+function setFilter(f) {
+  filter = f;
+  ['all','pending','done'].forEach(k =>
+    document.getElementById('f-' + k).classList.toggle('active', k === f)
+  );
+  render();
+}
+
+function setCatFilter(cat) {
+  catFilter = catFilter === cat ? null : cat;
+  CATS.forEach(c =>
+    document.getElementById('fc-' + c).classList.toggle('active', c === catFilter)
+  );
+  render();
+}
+
+function render() {
+  const visible = tasks.filter(t => {
+    const sOk = filter === 'all' ? true : filter === 'done' ? t.done : !t.done;
+    const cOk = catFilter ? t.cat === catFilter : true;
+    return sOk && cOk;
+  });
+
+  const total   = tasks.length;
+  const done    = tasks.filter(t => t.done).length;
+  const pending = total - done;
+
+  document.getElementById('hcount').textContent  = total ? `(${pending} pendiente${pending !== 1 ? 's' : ''})` : '';
+  document.getElementById('counter').textContent = total ? `${done}/${total} listas` : '';
+  const cb = document.getElementById('clear-btn');
+  cb.style.display = done > 0 ? 'inline-block' : 'none';
+
+  const list = document.getElementById('task-list');
+
+  if (!visible.length) {
+    const msgs = { done: 'ninguna completada aún.', pending: '¡todo al día!', all: 'la lista está vacía.' };
+    list.innerHTML = `<div class="empty">${catFilter ? 'nada en esta categoría.' : msgs[filter]}</div>`;
+    return;
+  }
+
+  list.innerHTML = visible.map(t => `
+    <div class="task-item ${t.done ? 'done' : ''}">
+      <button class="check-btn ${t.done ? 'done' : ''}" data-action="toggle" data-id="${t.id}" aria-label="${t.done ? 'Marcar pendiente' : 'Completar'}">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,6 5,9 10,3"/>
+        </svg>
+      </button>
+      <span class="task-text ${t.done ? 'done' : ''}">${escHtml(t.text)}</span>
+      <span class="badge cat-${t.cat}">${LABELS[t.cat] || t.cat}</span>
+      <button class="del-btn" data-action="delete" data-id="${t.id}" aria-label="Eliminar">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Event wiring ─────────────────────────────────────────────────
+document.getElementById('login-btn').addEventListener('click', login);
+document.getElementById('logout-btn').addEventListener('click', logout);
+document.getElementById('add-btn').addEventListener('click', addTask);
+document.getElementById('new-task').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+document.getElementById('clear-btn').addEventListener('click', clearDone);
+
+document.getElementById('f-all').addEventListener('click',     () => setFilter('all'));
+document.getElementById('f-pending').addEventListener('click', () => setFilter('pending'));
+document.getElementById('f-done').addEventListener('click',    () => setFilter('done'));
+
+CATS.forEach(c => {
+  document.getElementById('fc-' + c).addEventListener('click', () => setCatFilter(c));
+});
+
+document.getElementById('cat-selector').addEventListener('click', e => {
+  const btn = e.target.closest('[data-cat]');
+  if (btn) selectCat(btn.dataset.cat);
+});
+
+document.getElementById('task-list').addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const { action, id } = btn.dataset;
+  if (action === 'toggle') toggleTask(id);
+  if (action === 'delete') deleteTask(id);
+});
+
+// ── Theme toggle ─────────────────────────────────────────────────
+const SUN  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+const MOON = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+
+function updateThemeBtn() {
+  const isDark = document.documentElement.dataset.theme !== 'light';
+  document.getElementById('theme-btn').innerHTML = isDark ? SUN : MOON;
+}
+
+function toggleTheme() {
+  const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem('theme', next);
+  updateThemeBtn();
+}
+
+updateThemeBtn();
+document.getElementById('theme-btn').addEventListener('click', toggleTheme);
+</script>
+</body>
+</html>
