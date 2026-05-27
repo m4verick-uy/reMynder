@@ -194,3 +194,30 @@ Estos estándares aplican a TODO el trabajo en este proyecto:
 - **Respetar el stack actual** — no proponer migraciones a frameworks sin pedido explícito
 - **Pensar en el roadmap** — toda solución debe ser compatible con la evolución prevista
 - **Priorizar calidad** — este producto tiene aspiraciones comerciales, no es un prototipo
+
+---
+
+## Flujo de trabajo — Software Factory
+
+### Al iniciar sesión (siempre primero)
+"Actúa como Session Start de ReMynder"
+
+### Para desarrollar una feature
+"Actúa como Orchestrator de ReMynder. La feature es: [descripción]"
+
+El Orchestrator coordina en orden:
+Researcher → Story Writer → Spec Writer → Backend Builder → Frontend Builder → Test Verifier → Validator
+
+### Para hacer deploy (solo con Validator aprobado)
+vercel --prod
+
+### Para cerrar sesión (siempre al final)
+"Actúa como Session End de ReMynder"
+
+### Reglas de oro
+- Sin Session Start no se trabaja
+- Sin Validator aprobado no hay deploy
+- Sin Session End no se cierra
+
+### Agentes disponibles
+.agents/session-start.md → .agents/orchestrator.md → .agents/researcher.md → .agents/story-writer.md → .agents/spec-writer.md → .agents/backend-builder.md → .agents/frontend-builder.md → .agents/test-verifier.md → .agents/validator.md → .agents/session-end.md
