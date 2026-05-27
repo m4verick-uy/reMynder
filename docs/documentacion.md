@@ -4,7 +4,7 @@
 
 App web de gestión de tareas personales con autenticación Google. Cada usuario ve y gestiona únicamente sus propias tareas, organizadas por categorías y filtrables por estado. Datos sincronizados en tiempo real entre dispositivos.
 
-URL de producción: `https://pendientes-six.vercel.app`
+URL de producción: `https://remynder.vercel.app`
 
 ---
 
@@ -95,7 +95,7 @@ user.photoURL     // URL del avatar de Google
 
 **Google Cloud Console** (`console.cloud.google.com`):
 - APIs & Services → Credentials → OAuth 2.0 Client ID
-- Authorized JavaScript Origins → debe incluir `https://pendientes-six.vercel.app`
+- Authorized JavaScript Origins → debe incluir `https://remynder.vercel.app`
 
 **Firestore Security Rules** (Firebase Console → Firestore → Rules):
 ```
@@ -340,7 +340,7 @@ El proyecto está linkeado via `.vercel/project.json`:
 {
   "projectId": "prj_N8LDIc2p7vuoR2I0MSLRpo2WZQkm",
   "orgId":     "team_KnSP45ZtOw9ajYFt2IYJFVzc",
-  "projectName": "pendientes"
+  "projectName": "remynder"
 }
 ```
 
