@@ -1,10 +1,10 @@
-# Pendientes — Documentación técnica
+# ReMynder — Documentación técnica
 
 ## Qué es
 
-App web de gestión de tareas personales con autenticación Google. Cada usuario ve y gestiona únicamente sus propias tareas, organizadas por categorías y filtrables por estado. Datos sincronizados en tiempo real entre dispositivos.
+App web de gestión de tareas personales con autenticación Google. Cada usuario ve y gestiona únicamente sus propias tareas, organizadas en categorías dinámicas creadas por él mismo, filtrables por estado y categoría. Datos sincronizados en tiempo real entre dispositivos.
 
-URL de producción: `https://remynder.vercel.app`
+**URL de producción:** `https://remynder.vercel.app`
 
 ---
 
@@ -19,18 +19,22 @@ URL de producción: `https://remynder.vercel.app`
 | Fuentes | Google Fonts — DM Sans + DM Mono |
 | Firebase SDK | CDN `gstatic.com` v10.12.0 (módulos ES) |
 
-No hay framework, no hay npm, no hay proceso de build. Un único archivo `index.html` que el browser ejecuta directamente.
+No hay framework, no hay npm, no hay proceso de build. Un único `web/index.html` que el browser ejecuta directamente.
 
 ---
 
 ## Estructura del proyecto
 
 ```
-proyectos/
-├── index.html          # Toda la app: HTML + CSS + JS en un único archivo
-├── .vercel/
-│   └── project.json    # Linkeo con proyecto Vercel (projectId, orgId)
-└── documentacion.md    # Este archivo
+reMynder/
+├── web/
+│   └── index.html        # Toda la app: HTML + CSS + JS
+├── docs/
+│   └── documentacion.md  # Este archivo
+├── .agents/              # Agentes de la Software Factory
+├── vercel.json           # Rewrite: /* → /web/index.html
+└── .vercel/
+    └── project.json      # Linkeo Vercel (projectId, orgId)
 ```
 
 ---
@@ -40,18 +44,20 @@ proyectos/
 ```
 Browser
   │
-  ├── index.html (todo el código)
+  ├── web/index.html (todo el código)
   │     ├── CSS con variables para theming dark/light
-  │     ├── HTML: #login-screen + #app (uno visible a la vez)
+  │     ├── HTML: #login-screen + #app + #settings-screen
   │     └── JS módulo:
   │           ├── Firebase Auth (Google login)
-  │           ├── Firestore (tareas en tiempo real)
-  │           └── Lógica UI (filtros, render, tema)
+  │           ├── Firestore (categorías + tareas en tiempo real)
+  │           └── Lógica UI (filtros, render, ajustes)
   │
   ├── Firebase Auth ──── Google OAuth ──── Google Cloud
   │
   └── Firestore (base de datos)
-        └── users/{uid}/tasks/{taskId}
+        └── users/{uid}/
+              ├── tasks/{taskId}
+              └── categories/{catId}
 ```
 
 No hay backend propio. Firebase actúa como BaaS (Backend as a Service).
@@ -63,11 +69,11 @@ No hay backend propio. Firebase actúa como BaaS (Backend as a Service).
 ### Flujo de login
 
 1. Al cargar la página, `onAuthStateChanged` determina si hay sesión activa.
-2. Si no hay sesión → muestra `#login-screen`, oculta `#app`.
-3. Si hay sesión → muestra `#app`, oculta `#login-screen`, inicia listener de Firestore.
+2. Si no hay sesión → muestra `#login-screen`, oculta `#app` y `#settings-screen`.
+3. Si hay sesión → muestra `#app`, inicia `startListeners(uid)`.
 4. El usuario hace clic en "Continuar con Google" → `signInWithPopup`.
-5. Si el popup está bloqueado por el browser → fallback a `signInWithRedirect`.
-6. Tras auth exitosa, `onAuthStateChanged` dispara con el usuario autenticado y transiciona la UI.
+5. Si el popup está bloqueado → fallback a `signInWithRedirect`.
+6. Tras auth exitosa, `onAuthStateChanged` dispara con el usuario autenticado.
 
 ### Gestión de errores de auth
 
@@ -77,7 +83,6 @@ No hay backend propio. Firebase actúa como BaaS (Backend as a Service).
 | `auth/popup-closed-by-user` | Muestra mensaje "Cerraste el popup. Intentá de nuevo." |
 | `auth/cancelled-popup-request` | Igual que el anterior |
 | Cualquier otro | Muestra `Error: <código>` en rojo bajo el botón |
-| Error de redirect (vuelta de Google) | Muestra `Error: <código>` si no es `auth/no-auth-event` |
 
 ### Datos del usuario disponibles post-login
 
@@ -93,10 +98,6 @@ user.photoURL     // URL del avatar de Google
 **Firebase Console** (`console.firebase.google.com` → proyecto `pendientes-2c0ea`):
 - Authentication → Settings → Authorized Domains → debe incluir el dominio de producción
 
-**Google Cloud Console** (`console.cloud.google.com`):
-- APIs & Services → Credentials → OAuth 2.0 Client ID
-- Authorized JavaScript Origins → debe incluir `https://remynder.vercel.app`
-
 **Firestore Security Rules** (Firebase Console → Firestore → Rules):
 ```
 rules_version = '2';
@@ -105,108 +106,184 @@ service cloud.firestore {
     match /users/{userId}/tasks/{taskId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+    match /users/{userId}/categories/{catId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
   }
 }
 ```
-Cada usuario solo puede leer y escribir sus propias tareas.
 
 ---
 
 ## Modelo de datos (Firestore)
 
-### Colección
+### Colección: tareas
 
 ```
 users/
-  {uid}/           ← ID de usuario de Firebase Auth
+  {uid}/
     tasks/
-      {taskId}/    ← ID autogenerado por Firestore
+      {taskId}/
         text:      string   — texto de la tarea
         done:      boolean  — completada o no
-        cat:       string   — categoría (ver lista abajo)
+        cat:       string   — ID de la categoría (catId)
         createdAt: number   — timestamp Unix (Date.now())
 ```
 
-### Categorías disponibles
+### Colección: categorías
 
-| Key | Label visible |
-|---|---|
-| `karate` | karate |
-| `facultad` | facultad |
-| `antel` | antel |
-| `salud` | salud |
-| `personal` | personal |
-| `padres` | padres |
+```
+users/
+  {uid}/
+    categories/
+      {catId}/
+        name:       string  — nombre de la categoría (texto libre del usuario)
+        colorIndex: number  — índice de color 0–9 (paleta predefinida)
+        createdAt:  number  — timestamp Unix (Date.now())
+```
 
-Las categorías están hardcodeadas en el array `CATS` del JS. Para agregar una nueva categoría hay que: (1) agregarla al array `CATS`, (2) agregar su entrada en `LABELS`, (3) agregar las variables CSS `--nueva` y `--nueva-bg` en ambos temas, (4) agregar la clase `.cat-nueva` en CSS, (5) agregar los botones en el HTML del selector y la nav.
+El campo `cat` de cada tarea almacena el `catId` del documento de categoría correspondiente. Para el usuario admin, los `catId` coinciden con los nombres históricos (`'karate'`, `'facultad'`, etc.) para cero migración de datos.
 
-### Query de tareas
+### Seed inicial de categorías
 
-Las tareas se ordenan por `createdAt` (ascendente) con `orderBy`. Firestore requiere un índice compuesto para queries combinadas; en este caso la query es simple (solo `orderBy`), así que no requiere índice adicional.
+- **Usuario admin** (`ADMIN_UID` en el código): recibe sus 6 categorías con IDs explícitos vía `setDoc + merge:true` (idempotente).
+- **Usuarios nuevos** (sin categorías en primer login): reciben "trabajo" (colorIndex: 0) y "personal" (colorIndex: 4) vía `addDoc`. Editables y eliminables.
+- La detección es: primer disparo del listener de categorías con `categories.length === 0`.
 
 ---
 
 ## Sincronización en tiempo real
 
-Se usa `onSnapshot` de Firestore, que mantiene una conexión WebSocket abierta y dispara el callback cada vez que cambia cualquier documento en la colección del usuario.
+Se usan **dos listeners `onSnapshot`** paralelos por sesión:
 
 ```javascript
-function startListener(uid) {
-  if (unsubscribe) unsubscribe();  // cancela listener anterior si existe
-  const q = query(collection(db, 'users', uid, 'tasks'), orderBy('createdAt'));
-  unsubscribe = onSnapshot(q, snap => {
+function startListeners(uid) {
+  // Listener de categorías
+  const qCats = query(collection(db, 'users', uid, 'categories'), orderBy('createdAt'));
+  unsubCats = onSnapshot(qCats, snap => {
+    categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // seed si es primer login sin categorías
+    // actualiza selector, filtros y lista
+  });
+
+  // Listener de tareas
+  const qTasks = query(collection(db, 'users', uid, 'tasks'), orderBy('createdAt'));
+  unsubTasks = onSnapshot(qTasks, snap => {
     tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     render();
   });
 }
 ```
 
-El listener se inicia al hacer login y se cancela al hacer logout (`unsubscribe()`). La variable `unsubscribe` es module-level para poder cancelarlo desde el callback de `onAuthStateChanged`.
+Ambos listeners se cancelan en logout. Las variables `unsubCats` y `unsubTasks` son module-level.
 
 ---
 
 ## Operaciones sobre tareas
 
-Todas son async y operan sobre Firestore directamente. La UI se actualiza sola gracias a `onSnapshot`.
+| Función | Operación Firestore | Descripción |
+|---|---|---|
+| `addTask()` | `addDoc` | Lee el input, usa `selectedCat` como categoría, escribe en Firestore |
+| `toggleTask(id)` | `updateDoc` | Invierte el campo `done` |
+| `deleteTask(id)` | `deleteDoc` | Elimina el documento |
+| `clearDone()` | `writeBatch` | Elimina todas las tareas con `done: true` en una sola operación atómica |
+
+## Operaciones sobre categorías
 
 | Función | Operación Firestore | Descripción |
 |---|---|---|
-| `addTask()` | `addDoc` | Lee el input, limpia el campo, escribe en Firestore |
-| `toggleTask(id)` | `updateDoc` | Invierte el campo `done` |
-| `deleteTask(id)` | `deleteDoc` | Elimina el documento |
-| `clearDone()` | `writeBatch` + `batch.delete` | Elimina todas las tareas con `done: true` en una sola operación atómica |
+| `createCategory(name, colorIndex)` | `addDoc` | Crea categoría con nombre y color; valida que nombre no esté vacío |
+| `updateCategory(id, name, colorIndex)` | `updateDoc` | Actualiza nombre y color; valida nombre |
+| `deleteCategory(id)` | `deleteDoc` | Elimina si no tiene tareas; pide confirmación nativa |
+| `seedCategories(uid)` | `setDoc+merge` / `addDoc` | Seed inicial según si es admin o usuario nuevo |
 
 ---
 
 ## Estado de la UI (variables JS)
 
 ```javascript
-let tasks       = []      // array local de tareas (sincronizado por onSnapshot)
-let filter      = 'all'   // 'all' | 'pending' | 'done'
-let catFilter   = null    // null | 'karate' | 'facultad' | ...
-let selectedCat = 'karate'// categoría activa para nuevas tareas
-let unsubscribe = null    // función para cancelar el listener de Firestore
+let tasks           = []     // array local de tareas (sincronizado por onSnapshot)
+let categories      = []     // array local de categorías (sincronizado por onSnapshot)
+let filter          = 'all'  // 'all' | 'pending' | 'done'
+let catFilter       = null   // null | catId — filtro activo de categoría
+let selectedCat     = null   // catId activo para nuevas tareas (null hasta primer snapshot)
+let unsubTasks      = null   // función para cancelar listener de tareas
+let unsubCats       = null   // función para cancelar listener de categorías
+let categoriesReady = false  // true después del primer snapshot de categorías
+let editingCatId    = null   // catId en edición inline, 'new' si se está creando, null si ninguno
 ```
 
 No hay framework de estado. El estado vive en variables de módulo y `render()` recalcula todo desde `tasks` con los filtros activos.
 
 ---
 
-## Función render()
+## Funciones de renderizado
 
-Función central de la UI. Se llama cada vez que `onSnapshot` recibe datos o cambia un filtro. Recalcula todo:
-
-1. Aplica `filter` (all/pending/done) y `catFilter` para obtener `visible[]`
-2. Actualiza el contador del header (`hcount`) con tareas pendientes
-3. Actualiza el contador del footer (`counter`) con `done/total`
-4. Muestra/oculta el botón "limpiar completadas"
-5. Renderiza el HTML de la lista via `innerHTML` (template string)
+| Función | Qué hace |
+|---|---|
+| `render()` | Renderiza la lista de tareas según filtros activos; actualiza contadores y botón "limpiar" |
+| `renderCatSelector()` | Genera los pills de categoría en el header para elegir categoría de nueva tarea |
+| `renderNavCats()` | Genera los botones de filtro de categoría en la nav |
+| `renderSettings()` | Genera la lista de categorías en la pantalla de ajustes |
+| `renderCatForm(id, name, colorIndex)` | Genera el formulario inline de crear/editar categoría |
+| `getCatBadge(catId)` | Helper que devuelve el HTML del badge de una tarea (busca en `categories[]`) |
 
 El render es completo cada vez (no diff). Funciona bien dado el volumen esperado de tareas.
 
-### Seguridad XSS
+---
 
-El texto de las tareas se sanitiza con `escHtml()` antes de insertarse en el DOM via `innerHTML`:
+## Sistema de pantallas
+
+La app tiene tres estados de UI excluyentes:
+
+```
+#login-screen   — pantalla de login (visible cuando no autenticado)
+#app            — pantalla principal con tareas (visible cuando autenticado)
+#settings-screen — pantalla de ajustes de categorías (visible desde ⚙ en el header)
+```
+
+Los tres divs empiezan con `display:none`. `onAuthStateChanged` decide cuál mostrar al cargar. `showSettings()` / `hideSettings()` gestiona la transición entre `#app` y `#settings-screen`.
+
+### Estructura HTML de #settings-screen
+
+```
+#settings-screen (display:none por defecto)
+  <header> (sticky)
+    .header-top
+      #settings-back-btn.back-btn   ← volver
+      h2.settings-title             ajustes
+  <main class="settings-main">
+    .settings-section-title         categorías
+    #categories-list                ← renderizado por renderSettings()
+    #add-category-btn               + nueva categoría
+```
+
+---
+
+## Sistema de colores (paleta predefinida)
+
+Las categorías ya no usan variables CSS por nombre. El campo `colorIndex` (0–9) apunta a una paleta numerada:
+
+| Índice | Dark (texto / fondo) | Light (texto / fondo) | Historia |
+|---|---|---|---|
+| 0 | #F0997B / #4A1B0C | #D85A30 / #FAECE7 | naranja-rojo |
+| 1 | #85B7EB / #042C53 | #185FA5 / #E6F1FB | azul |
+| 2 | #5DCAA5 / #04342C | #0F6E56 / #E1F5EE | verde-teal |
+| 3 | #F09595 / #501313 | #A32D2D / #FCEBEB | rojo |
+| 4 | #AFA9EC / #26215C | #534AB7 / #EEEDFE | violeta |
+| 5 | #EF9F27 / #412402 | #854F0B / #FAEEDA | ámbar |
+| 6 | #EC8EC4 / #3D1030 | #B52B7A / #FDE8F4 | rosa |
+| 7 | #67D4E8 / #053140 | #0F6C82 / #E0F7FA | cian |
+| 8 | #A3D96C / #1D3508 | #4A7C10 / #EFF7E0 | verde-lima |
+| 9 | #7B9EEB / #0D1A4A | #2840A0 / #E8EDFC | índigo |
+
+Las clases CSS son `.cat-p0` a `.cat-p9`. El alias `--salud: var(--p3)` se preserva para backward compatibility con estilos de chrome (botón salir, limpiar completadas).
+
+---
+
+## Seguridad XSS
+
+Todo texto de usuario que se inserta en el DOM via `innerHTML` pasa por `escHtml()`:
 
 ```javascript
 function escHtml(str) {
@@ -218,22 +295,13 @@ function escHtml(str) {
 }
 ```
 
+En `renderNavCats()` se usa `btn.textContent = cat.name` (seguro por diseño, sin necesidad de escaping).
+
 ---
 
 ## Sistema de temas (dark / light)
 
-### Mecanismo
-
-Se usa el atributo `data-theme` en el elemento `<html>` para activar uno u otro tema via CSS:
-
-```css
-:root { /* dark — default */ }
-html[data-theme="light"] { /* light — override */ }
-```
-
-No se usa `@media (prefers-color-scheme)`. El tema es completamente manual y persistido en `localStorage`.
-
-### Variables CSS
+Variables CSS en `:root` (dark) y `html[data-theme="light"]` (override). Toggle manual, persistido en `localStorage`. Script síncrono en `<head>` aplica el tema antes del render (anti-FOUC).
 
 | Variable | Uso |
 |---|---|
@@ -244,123 +312,58 @@ No se usa `@media (prefers-color-scheme)`. El tema es completamente manual y per
 | `--text` | Texto principal |
 | `--muted` | Texto secundario |
 | `--subtle` | Texto terciario / placeholders |
-
-Cada categoría tiene dos variables: `--{cat}` (color del texto/badge) y `--{cat}-bg` (fondo del badge). Sus valores cambian entre temas.
-
-### Prevención de flash (FOUC)
-
-Un script síncrono en `<head>` — antes de cualquier CSS — aplica el tema antes de que el browser renderice la página:
-
-```html
-<script>
-  document.documentElement.dataset.theme = localStorage.getItem('theme') || 'dark';
-</script>
-```
-
-### Toggle
-
-El botón circular con ícono sol/luna en el header llama a `toggleTheme()`:
-- En dark → muestra ícono sol (click pasa a light)
-- En light → muestra ícono luna (click pasa a dark)
-
----
-
-## Estructura HTML
-
-```
-<html data-theme="dark|light">
-  <head>
-    <script> — aplica tema antes de render (anti-FOUC)
-    <link>   — Google Fonts
-    <style>  — todos los estilos inline
-  <body>
-    #login-screen   — pantalla de login (display:none por defecto)
-      .login-card
-        #login-sub  — texto de estado / errores
-        #login-btn  — botón "Continuar con Google"
-
-    #app            — pantalla principal (display:none por defecto)
-      <header>      — sticky top
-        .header-top
-          h1 + #hcount
-          .user-info
-            #theme-btn   — toggle dark/light
-            #user-avatar — foto de perfil Google
-            #user-name   — nombre del usuario
-            #logout-btn  — cerrar sesión
-        .add-row
-          #new-task    — input de nueva tarea
-          #add-btn     — botón agregar
-        #cat-selector — pills para elegir categoría de nueva tarea
-      <nav>         — filtros de visualización
-        #f-all, #f-pending, #f-done — filtros por estado
-        #fc-{cat}                   — filtros por categoría
-      <main>
-        #task-list  — lista de tareas (renderizada por JS)
-      <footer>
-        #counter    — "X/Y listas"
-        #clear-btn  — limpiar completadas (oculto si no hay)
-
-    <script type="module"> — toda la lógica JS
-```
-
-Los dos root divs (`#login-screen` y `#app`) empiezan con `display:none`. `onAuthStateChanged` decide cuál mostrar. Esto evita el parpadeo de la pantalla equivocada mientras Firebase inicializa.
+| `--p0`–`--p9` | Texto de cada color de categoría |
+| `--p0-bg`–`--p9-bg` | Fondo de cada color de categoría |
+| `--salud` | Alias para `var(--p3)` — backward compat |
 
 ---
 
 ## Event listeners
 
-Los listeners están centralizados al final del módulo JS. Para la lista de tareas se usa **delegación de eventos** (un solo listener en `#task-list` que lee `data-action` y `data-id` de los botones hijos) en lugar de listeners por cada tarea:
+Centralizados al final del módulo JS. Se usa **delegación de eventos** donde los elementos son dinámicos:
 
-```javascript
-document.getElementById('task-list').addEventListener('click', e => {
-  const btn = e.target.closest('[data-action]');
-  if (!btn) return;
-  const { action, id } = btn.dataset;
-  if (action === 'toggle') toggleTask(id);
-  if (action === 'delete') deleteTask(id);
-});
-```
-
-También se captura Enter en el input de nueva tarea para agregar sin usar el ratón.
+| Contenedor | Datos leídos | Acción |
+|---|---|---|
+| `#task-list` | `data-action`, `data-id` | toggle / delete tarea |
+| `#categories-list` | `data-action`, `data-id`, `data-color` | edit-cat / delete-cat / confirm-cat / cancel-cat / select-color |
+| `nav` | `data-cat-filter` | setCatFilter |
+| `#cat-selector` | `data-cat` | selectCat |
 
 ---
 
 ## Deploy
 
-Hosting en **Vercel** como sitio estático.
+Hosting en **Vercel** como sitio estático. El `vercel.json` redirige todas las rutas a `web/index.html`:
 
-```bash
-vercel        # deploy preview
-vercel --prod # deploy producción
+```json
+{ "rewrites": [{ "source": "/(.*)", "destination": "/web/index.html" }] }
 ```
 
-El proyecto está linkeado via `.vercel/project.json`:
+```bash
+vercel --prod  # deploy a producción
+```
+
+Proyecto linkeado via `.vercel/project.json`:
 ```json
 {
-  "projectId": "prj_N8LDIc2p7vuoR2I0MSLRpo2WZQkm",
-  "orgId":     "team_KnSP45ZtOw9ajYFt2IYJFVzc",
+  "projectId":   "prj_N8LDIc2p7vuoR2I0MSLRpo2WZQkm",
+  "orgId":       "team_KnSP45ZtOw9ajYFt2IYJFVzc",
   "projectName": "remynder"
 }
 ```
-
-Vercel sirve el `index.html` directamente sin configuración adicional. No hay `vercel.json`, no hay `package.json`.
 
 ---
 
 ## Desarrollo local
 
-Sin servidor de desarrollo requerido. Abrir `index.html` directamente en el browser funciona, pero Firebase Auth bloquea el dominio `file://`. Para desarrollar localmente:
+Firebase Auth bloquea `file://`. Usar servidor HTTP:
 
 ```bash
-# Opción 1: servidor HTTP simple con Python
 python3 -m http.server 3000
-
-# Opción 2: con npx
-npx serve .
+# o: npx serve .
 ```
 
-Luego agregar `localhost` a los **Authorized Domains** en Firebase Console.
+Agregar `localhost` a Authorized Domains en Firebase Console.
 
 ---
 
@@ -379,15 +382,15 @@ const firebaseConfig = {
 };
 ```
 
-El `apiKey` de Firebase para apps web **no es un secreto**: está diseñado para ser público y visible en el cliente. La seguridad real está en las **Firestore Security Rules** que restringen qué operaciones puede hacer cada usuario autenticado.
+El `apiKey` de Firebase para apps web **no es un secreto**. La seguridad está en las **Firestore Security Rules**.
 
 ---
 
-## Limitaciones conocidas
+## Limitaciones conocidas (deuda técnica)
 
-- **Categorías hardcodeadas**: agregar una nueva requiere cambios en JS, CSS y HTML.
 - **Sin edición de tareas**: solo se puede agregar, completar y eliminar.
 - **Sin orden personalizable**: las tareas siempre se muestran por fecha de creación.
 - **Sin paginación**: si el usuario tiene muchas tareas, todas se cargan y renderizan.
 - **Render completo**: cada cambio re-renderiza toda la lista (no diff/virtual DOM).
-- **Tema solo accesible logueado**: el botón de tema está dentro de `#app`; en la pantalla de login el tema se aplica pero no hay botón visible para cambiarlo.
+- **Feedback silencioso sin categorías**: si el usuario elimina todas sus categorías e intenta agregar una tarea, el input queda con texto pero no pasa nada (sin mensaje de error visible).
+- **Tema solo accesible logueado**: el botón de tema está dentro de `#app`; en login el tema se aplica pero no hay botón visible.
