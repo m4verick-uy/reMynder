@@ -199,33 +199,65 @@ Estos estándares aplican a TODO el trabajo en este proyecto:
 
 ## Flujo de trabajo — Software Factory
 
-### Al iniciar sesión (siempre primero)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  COMANDOS DE SESIÓN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+INICIO (siempre primero):
 "Actúa como Session Start de ReMynder"
 
-### Para desarrollar una feature
-"Actúa como Orchestrator de ReMynder. La feature es: [descripción]"
-
-El Orchestrator coordina en orden:
-Researcher → Story Writer → Spec Writer → Backend Builder → Frontend Builder → Test Verifier → Validator
-
-### Para hacer deploy (solo con Validator aprobado)
-vercel --prod
-
-### Para cerrar sesión (siempre al final)
+CIERRE (siempre al final):
 "Actúa como Session End de ReMynder"
 
-### Reglas de oro
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  TIPOS DE TAREA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FEATURE — algo nuevo para el usuario:
+"Actúa como Orchestrator de ReMynder.
+Feature: [descripción]"
+
+HOTFIX — algo roto:
+"Actúa como Orchestrator de ReMynder.
+Hotfix [visual/lógico/datos]: [descripción]
+Límites: [qué NO tocar]"
+
+REFACTOR — mejorar sin cambiar comportamiento:
+"Actúa como Orchestrator de ReMynder.
+Refactor: [qué y por qué]
+Límites: el comportamiento visible no debe cambiar"
+
+RESEARCH — explorar antes de decidir:
+"Actúa como Orchestrator de ReMynder.
+Research: [pregunta]
+Solo análisis, sin implementar nada."
+
+DECISION — criterio antes de actuar:
+"Actúa como Orchestrator de ReMynder.
+Decisión pendiente: [contexto y opciones]
+Dame tu recomendación antes de implementar."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  REGLAS DE ORO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 - Sin Session Start no se trabaja
 - Sin Validator aprobado no hay deploy
 - Sin Session End no se cierra
+- Toda tarea entra SIEMPRE por el Orchestrator
+- Nunca directo a Claude Code sin pasar por el Orchestrator
 
-### Regla de entrada única
-Toda tarea — feature, hotfix, fix visual, refactor — entra 
-SIEMPRE por el Orchestrator. Nunca directo a Claude Code.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  AGENTES DISPONIBLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-- Feature nueva → Orchestrator completo (7 agentes)
-- Hotfix → Orchestrator abreviado (agentes necesarios)
-- Nunca: describir el problema directo a Claude Code sin Orchestrator
-
-### Agentes disponibles
-.agents/session-start.md → .agents/orchestrator.md → .agents/researcher.md → .agents/story-writer.md → .agents/spec-writer.md → .agents/backend-builder.md → .agents/frontend-builder.md → .agents/test-verifier.md → .agents/validator.md → .agents/session-end.md
+.agents/session-start.md
+.agents/orchestrator.md
+.agents/researcher.md
+.agents/story-writer.md
+.agents/spec-writer.md
+.agents/backend-builder.md
+.agents/frontend-builder.md
+.agents/test-verifier.md
+.agents/validator.md
+.agents/session-end.md
