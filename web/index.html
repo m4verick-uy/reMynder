@@ -37,7 +37,7 @@
 
     html[data-theme="light"] {
       --bg: #FFFFFF;
-      --surface: #D6D1C9;
+      --surface: #E2DDD6;
       --border: rgba(0,0,0,0.08);
       --border-md: rgba(0,0,0,0.14);
       --text: #1A1A18;
@@ -266,6 +266,18 @@
     html[data-theme="dark"] .cat-p7 { background: var(--p7); color: var(--bg); }
     html[data-theme="dark"] .cat-p8 { background: var(--p8); color: var(--bg); }
     html[data-theme="dark"] .cat-p9 { background: var(--p9); color: var(--bg); }
+    /* light mode: nav pills — fix cascade override por .nav-btn + restaurar opacity */
+    html[data-theme="light"] .nav-btn.cat-pill { opacity: 1; }
+    html[data-theme="light"] .nav-btn.cat-pill:not(.active).cat-p0 { background: var(--p0-bg); color: var(--p0); }
+    html[data-theme="light"] .nav-btn.cat-pill:not(.active).cat-p1 { background: var(--p1-bg); color: var(--p1); }
+    html[data-theme="light"] .nav-btn.cat-pill:not(.active).cat-p2 { background: var(--p2-bg); color: var(--p2); }
+    html[data-theme="light"] .nav-btn.cat-pill:not(.active).cat-p3 { background: var(--p3-bg); color: var(--p3); }
+    html[data-theme="light"] .nav-btn.cat-pill:not(.active).cat-p4 { background: var(--p4-bg); color: var(--p4); }
+    html[data-theme="light"] .nav-btn.cat-pill:not(.active).cat-p5 { background: var(--p5-bg); color: var(--p5); }
+    html[data-theme="light"] .nav-btn.cat-pill:not(.active).cat-p6 { background: var(--p6-bg); color: var(--p6); }
+    html[data-theme="light"] .nav-btn.cat-pill:not(.active).cat-p7 { background: var(--p7-bg); color: var(--p7); }
+    html[data-theme="light"] .nav-btn.cat-pill:not(.active).cat-p8 { background: var(--p8-bg); color: var(--p8); }
+    html[data-theme="light"] .nav-btn.cat-pill:not(.active).cat-p9 { background: var(--p9-bg); color: var(--p9); }
 
     nav {
       display: flex;
