@@ -75,6 +75,22 @@ Categorías dinámicas — permite al usuario crear sus propias categorías
 en lugar de las 6 hardcodeadas actuales. Es la deuda técnica número 1
 del proyecto y el primer paso hacia el producto comercial.
 
+## Hotfix — flujo abreviado
+
+Para fixes pequeños (visual, texto, comportamiento puntual) que no 
+requieren los 7 agentes completos, usar este flujo abreviado:
+
+"Actúa como Orchestrator de ReMynder. 
+Hotfix: [descripción del problema]
+Límites: [qué NO tocar explícitamente]"
+
+El Orchestrator evalúa y delega solo a los agentes necesarios.
+Ejemplo hotfix visual → solo Frontend Builder.
+Ejemplo hotfix lógico → solo Backend Builder + Test Verifier.
+
+NUNCA ir directo a Claude Code sin pasar por el Orchestrator.
+El Orchestrator es siempre el punto de entrada, sin excepción.
+
 ## Señales de alerta
 
 Si en cualquier punto un agente reporta alguno de estos problemas,

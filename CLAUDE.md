@@ -219,5 +219,13 @@ vercel --prod
 - Sin Validator aprobado no hay deploy
 - Sin Session End no se cierra
 
+### Regla de entrada única
+Toda tarea — feature, hotfix, fix visual, refactor — entra 
+SIEMPRE por el Orchestrator. Nunca directo a Claude Code.
+
+- Feature nueva → Orchestrator completo (7 agentes)
+- Hotfix → Orchestrator abreviado (agentes necesarios)
+- Nunca: describir el problema directo a Claude Code sin Orchestrator
+
 ### Agentes disponibles
 .agents/session-start.md → .agents/orchestrator.md → .agents/researcher.md → .agents/story-writer.md → .agents/spec-writer.md → .agents/backend-builder.md → .agents/frontend-builder.md → .agents/test-verifier.md → .agents/validator.md → .agents/session-end.md
