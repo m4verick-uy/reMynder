@@ -11,6 +11,59 @@ Para desarrollar una nueva feature, invocá el Orchestrator así:
 "Actúa como Orchestrator de la Software Factory de ReMynder.
 La feature a desarrollar es: [descripción de la feature]"
 
+## Tipos de tareas y formatos
+
+### FEATURE — algo nuevo para el usuario
+Actúa como Orchestrator de ReMynder.
+Feature: [descripción del valor para el usuario]
+
+Ejemplo:
+"Actúa como Orchestrator de ReMynder.
+Feature: el usuario puede agregar fechas de vencimiento a sus tareas
+y ver un indicador visual cuando la fecha se acerca."
+
+### HOTFIX — algo roto que hay que arreglar
+Actúa como Orchestrator de ReMynder.
+Hotfix [visual/lógico/datos]: [descripción del problema]
+Límites: [qué NO tocar]
+
+Ejemplo:
+"Actúa como Orchestrator de ReMynder.
+Hotfix visual: los badges en dark mode no tienen contraste.
+Límites: solo CSS dark theme, no tocar light theme, no tocar JS, no tocar tipografía."
+
+### REFACTOR — mejorar código sin cambiar comportamiento
+Actúa como Orchestrator de ReMynder.
+Refactor: [qué mejorar y por qué]
+Límites: el comportamiento visible no debe cambiar
+
+Ejemplo:
+"Actúa como Orchestrator de ReMynder.
+Refactor: separar el CSS, HTML y JS del index.html en archivos independientes.
+Límites: la app debe funcionar exactamente igual que antes."
+
+### RESEARCH — explorar antes de decidir
+Actúa como Orchestrator de ReMynder.
+Research: [pregunta o tema a explorar]
+Solo quiero el análisis, sin implementar nada.
+
+Ejemplo:
+"Actúa como Orchestrator de ReMynder.
+Research: ¿cuál es la mejor estrategia para migrar ReMynder a una PWA
+compatible con iOS sin perder la experiencia actual?
+Solo quiero el análisis, sin implementar nada."
+
+### DECISION — necesitás criterio antes de actuar
+Actúa como Orchestrator de ReMynder.
+Decisión pendiente: [contexto y opciones]
+Dame tu recomendación antes de implementar.
+
+Ejemplo:
+"Actúa como Orchestrator de ReMynder.
+Decisión pendiente: quiero agregar notificaciones push a ReMynder.
+Las opciones son Firebase Cloud Messaging o Web Push API nativa.
+Dame tu recomendación antes de implementar."
+
 ## Flujo de trabajo
 
 1. RESEARCHER
