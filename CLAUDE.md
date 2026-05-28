@@ -199,8 +199,8 @@ Estos estándares aplican a TODO el trabajo en este proyecto:
 
 ## Comando de ayuda
 
-Cuando el usuario escriba /remynder, mostrar el flujo de trabajo completo 
-de la Software Factory tal como está documentado en este archivo.
+Cuando el usuario escriba "workflow", mostrar el flujo de trabajo 
+completo de la Software Factory tal como está documentado en este archivo.
 
 ---
 
