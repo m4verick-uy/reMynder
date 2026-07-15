@@ -155,6 +155,10 @@ con este roadmap:
 - Proyecto: `pendientes` (projectId: `prj_N8LDIc2p7vuoR2I0MSLRpo2WZQkm`)
 - Deploy: `vercel --prod`
 - No requiere configuración adicional (`vercel.json`, `package.json`)
+- **Entorno de desarrollo:** branch `develop` — cada push genera un preview deploy automático en
+  `remynder-git-develop-m4vericks-projects.vercel.app`. Merge a `main` para pasar a producción.
+  Comparte el mismo proyecto Firebase/Firestore que producción (sin aislamiento de datos) —
+  decisión tomada el 2026-07-15 por simplicidad, dado que es un solo usuario (el creador).
 
 ---
 
