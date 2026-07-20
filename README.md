@@ -52,21 +52,34 @@ Then add `localhost` to **Authorized Domains** in Firebase Console.
 
 ## Dev → Prod Workflow
 
-- **`develop`** branch — work and push here first. Vercel auto-deploys every push to a stable preview URL: `remynder-git-develop-m4vericks-projects.vercel.app`.
-- **`main`** branch — production. Merging `develop` → `main` deploys to `remynder.vercel.app`.
-- Both branches share the same Firebase project (`pendientes-2c0ea`) and Firestore database — there is no data isolation between preview and production. Test changes carefully; anything you do in the preview affects real task data.
-- The preview URL is added to Firebase **Authorized Domains** so Google login works there.
+This project has no automatic Git-triggered deploys (there's no Vercel↔GitHub webhook
+connected) — deploys have always been manual via the Vercel CLI. The dev environment follows
+the same pattern:
+
+- **`develop`** branch — work here first. Deploy with `vercel` (no flag) to push a **preview**
+  deployment, then run `vercel alias set <preview-url> remynder-dev.vercel.app` once to keep a
+  stable, bookmarkable dev URL: **https://remynder-dev.vercel.app**. Subsequent `vercel` runs
+  need the alias re-pointed the same way if you want `remynder-dev.vercel.app` to reflect the
+  latest preview.
+- **`main`** branch — production. Merge `develop` → `main`, then run `vercel --prod` to deploy to
+  `remynder.vercel.app`.
+- Both branches share the same Firebase project (`pendientes-2c0ea`) and Firestore database — no
+  data isolation between dev and production. Anything you do at `remynder-dev.vercel.app` affects
+  real task data.
+- `remynder-dev.vercel.app` is added to Firebase **Authorized Domains** so Google login works there.
 
 ```bash
 git checkout develop
-# make changes, commit, push
-git push origin develop
-# open remynder-git-develop-m4vericks-projects.vercel.app, verify in browser
+# make changes, commit
+vercel                # deploy preview
+vercel alias set <preview-url-from-output> remynder-dev.vercel.app
+# open remynder-dev.vercel.app, verify in browser
 
 # when satisfied:
 git checkout main
 git merge develop
 git push origin main
+vercel --prod         # deploy to remynder.vercel.app
 ```
 
 ---

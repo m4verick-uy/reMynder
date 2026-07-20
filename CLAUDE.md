@@ -155,10 +155,13 @@ con este roadmap:
 - Proyecto: `pendientes` (projectId: `prj_N8LDIc2p7vuoR2I0MSLRpo2WZQkm`)
 - Deploy: `vercel --prod`
 - No requiere configuración adicional (`vercel.json`, `package.json`)
-- **Entorno de desarrollo:** branch `develop` — cada push genera un preview deploy automático en
-  `remynder-git-develop-m4vericks-projects.vercel.app`. Merge a `main` para pasar a producción.
+- **No hay integración Git↔Vercel** (sin webhook conectado) — todos los deploys son manuales vía CLI, nunca automáticos por push.
+- **Entorno de desarrollo:** branch `develop`. Deploy manual con `vercel` (sin flag) genera un preview;
+  con `vercel alias set <preview-url> remynder-dev.vercel.app` se mantiene una URL fija:
+  **https://remynder-dev.vercel.app**. Merge a `main` + `vercel --prod` para pasar a producción.
   Comparte el mismo proyecto Firebase/Firestore que producción (sin aislamiento de datos) —
   decisión tomada el 2026-07-15 por simplicidad, dado que es un solo usuario (el creador).
+  `remynder-dev.vercel.app` debe agregarse a Authorized Domains en Firebase Console.
 
 ---
 
