@@ -153,15 +153,22 @@ con este roadmap:
 
 ### Vercel
 - Proyecto: `pendientes` (projectId: `prj_N8LDIc2p7vuoR2I0MSLRpo2WZQkm`)
-- Deploy: `vercel --prod`
+- **Integración Git↔Vercel activa desde 2026-07-20** (GitHub `m4verick-uy/reMynder` conectado).
+  **Production Branch confirmada: `main`** (verificado vía API — `link.productionBranch: "main"`).
+  Cada push a `main` o `develop` dispara un build automático. **Ya NO se necesita `vercel --prod`
+  ni `vercel` manual** — el flujo viejo (deploy manual vía CLI) quedó obsoleto con esta conexión.
 - No requiere configuración adicional (`vercel.json`, `package.json`)
-- **No hay integración Git↔Vercel** (sin webhook conectado) — todos los deploys son manuales vía CLI, nunca automáticos por push.
-- **Entorno de desarrollo:** branch `develop`. Deploy manual con `vercel` (sin flag) genera un preview;
-  con `vercel alias set <preview-url> remynder-dev.vercel.app` se mantiene una URL fija:
-  **https://remynder-dev.vercel.app**. Merge a `main` + `vercel --prod` para pasar a producción.
+- **Entorno de desarrollo:** branch `develop`. Push automático → preview en
+  **https://remynder-dev.vercel.app**, registrado como Domain del proyecto con
+  `gitBranch: "develop"` (vía API `POST /v10/projects/{id}/domains`), así que siempre trackea el
+  último deploy de `develop` sin re-aliasing manual. Merge a `main` + push → producción automática.
   Comparte el mismo proyecto Firebase/Firestore que producción (sin aislamiento de datos) —
   decisión tomada el 2026-07-15 por simplicidad, dado que es un solo usuario (el creador).
-  `remynder-dev.vercel.app` debe agregarse a Authorized Domains en Firebase Console.
+  `remynder-dev.vercel.app` ya está en Authorized Domains en Firebase Console.
+- **Regla de oro para cualquier agente:** antes de asumir que hay que deployar manualmente,
+  correr `vercel project inspect remynder` o revisar Settings → Git en el dashboard para
+  confirmar si la integración sigue activa y cuál es la Production Branch. Si esto cambia de
+  nuevo, actualizar esta sección — no dejar que quede desactualizada otra vez.
 
 ---
 
