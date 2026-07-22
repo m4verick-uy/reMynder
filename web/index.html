@@ -17,14 +17,16 @@
       --menu-highlight: #3a3a3c;
       --border: rgba(84,84,88,0.65);
       --border-md: #38383a;
-      --text: #ffffff;
-      --muted: rgba(235,235,245,0.6);
+      /* Texto: se deriva del fondo, no del componente — neutro→primario, translúcido→secundario, acento→máx. contraste */
+      --text: #ebebf5;
+      --muted: #ebebf599;
       --subtle: rgba(235,235,245,0.3);
       --fill: rgba(120,120,128,0.32);
       /* Acento — ÚNICO token de marca. Cambiarlo acá y en el bloque light alcanza para toda la UI. */
       --accent: #40c8e0;
       --accent-fill: color-mix(in srgb, var(--accent) 18%, transparent);
-      --accent-contrast: #ffffff;
+      /* #40c8e0 es un teal claro — texto blanco encima no alcanza contraste. Va oscuro. */
+      --accent-contrast: #00252b;
       --radius: 10px;
       --radius-sm: 8px;
       --radius-pill: 999px;
@@ -45,18 +47,21 @@
     }
 
     html[data-theme="light"] {
-      --bg: #f2f2f7;
+      /* Fondo de página bajado: el blanco de las tarjetas necesita separarse del bg para dar jerarquía */
+      --bg: #e9e9ec;
       --surface: #ffffff;
       --menu-bg: #ffffff;
       --menu-highlight: #f0f0f2;
       --border: rgba(60,60,67,0.29);
-      --border-md: #c6c6c8;
-      --text: #000000;
-      --muted: rgba(60,60,67,0.6);
+      --border-md: #dcdce0;
+      /* Texto: se deriva del fondo, no del componente — neutro→primario, translúcido→secundario, acento→máx. contraste */
+      --text: #1c1c1e;
+      --muted: #3c3c43bf;
       --subtle: rgba(60,60,67,0.3);
       --fill: rgba(120,120,128,0.16);
       /* Acento — mismo token, valor calibrado para contraste AA sobre fondo claro. */
       --accent: #1e7f91;
+      /* #1e7f91 es un teal oscuro — texto blanco encima sí alcanza contraste. */
       --accent-contrast: #ffffff;
 
       --p0: #ff9500;
@@ -361,7 +366,8 @@
     nav::-webkit-scrollbar { display: none; }
 
     /* Píldoras de filtro (estado, incluye categoría): mono-color — el color es SIEMPRE
-       systemBlue si está activa, fill translúcido si no. Nunca color de categoría. */
+       el acento si está activa, fill translúcido si no. Nunca color de categoría.
+       Fondo translúcido → texto secundario (regla de color por fondo). */
     .nav-btn {
       font-size: 13px;
       font-weight: 500;
@@ -369,7 +375,7 @@
       border-radius: var(--radius-pill);
       border: none;
       background: var(--fill);
-      color: var(--text);
+      color: var(--muted);
       cursor: pointer;
       white-space: nowrap;
       font-family: var(--font);
