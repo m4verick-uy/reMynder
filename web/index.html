@@ -13,56 +13,63 @@
 
       --bg: #000000;
       --surface: #1c1c1e;
+      --menu-bg: #2c2c2e;
+      --menu-highlight: #3a3a3c;
       --border: rgba(84,84,88,0.65);
       --border-md: #38383a;
       --text: #ffffff;
       --muted: rgba(235,235,245,0.6);
       --subtle: rgba(235,235,245,0.3);
       --fill: rgba(120,120,128,0.32);
-      --accent: #0a84ff;
-      --accent-fill: rgba(10,132,255,0.18);
+      /* Acento — ÚNICO token de marca. Cambiarlo acá y en el bloque light alcanza para toda la UI. */
+      --accent: #40c8e0;
+      --accent-fill: color-mix(in srgb, var(--accent) 18%, transparent);
       --accent-contrast: #ffffff;
       --radius: 10px;
       --radius-sm: 8px;
       --radius-pill: 999px;
 
-      --p0: #ff9e64; --p0-bg: #291700;
-      --p1: #7aa2f7; --p1-bg: #091638;
-      --p2: #9ece6a; --p2-bg: #1a2e0a;
-      --p3: #f7768e; --p3-bg: #2e1019;
-      --p4: #bb9af7; --p4-bg: #1e1538;
-      --p5: #e0af68; --p5-bg: #261e08;
-      --p6: #73daca; --p6-bg: #092822;
-      --p7: #7dcfff; --p7-bg: #082130;
-      --p8: #2ac3de; --p8-bg: #061d28;
-      --p9: #c0caf5; --p9-bg: #12152a;
-      --salud: var(--p3); --salud-bg: var(--p3-bg);
+      /* Categoría — mapeo fijo por nombre (ver seedCategories): p0 karate, p1 facultad,
+         p2 antel, p3 salud, p4 personal, p5 padres. Solo viven en dots de 6-8px. */
+      --p0: #ff9f0a;
+      --p1: #30d158;
+      --p2: #0a84ff;
+      --p3: #ff375f;
+      --p4: #bf5af2;
+      --p5: #ffd60a;
+      --p6: #73daca;
+      --p7: #7dcfff;
+      --p8: #2ac3de;
+      --p9: #c0caf5;
+      --salud: var(--p3);
     }
 
     html[data-theme="light"] {
       --bg: #f2f2f7;
       --surface: #ffffff;
+      --menu-bg: #ffffff;
+      --menu-highlight: #f0f0f2;
       --border: rgba(60,60,67,0.29);
       --border-md: #c6c6c8;
       --text: #000000;
       --muted: rgba(60,60,67,0.6);
       --subtle: rgba(60,60,67,0.3);
       --fill: rgba(120,120,128,0.16);
-      --accent: #007aff;
-      --accent-fill: rgba(0,122,255,0.1);
+      /* Acento — mismo token, valor calibrado para contraste AA sobre fondo claro. */
+      --accent: #1e7f91;
       --accent-contrast: #ffffff;
 
-      --p0: #b05228; --p0-bg: #fdf0e8;
-      --p1: #3d5ce0; --p1-bg: #e8edfc;
-      --p2: #4a7a1e; --p2-bg: #ecf5e0;
-      --p3: #c0344d; --p3-bg: #fde8ec;
-      --p4: #6d4fc7; --p4-bg: #eeebfd;
-      --p5: #8a6210; --p5-bg: #faf2de;
-      --p6: #1a7a65; --p6-bg: #e2f5f0;
-      --p7: #1573a0; --p7-bg: #e4f4fc;
-      --p8: #127a6a; --p8-bg: #e0f5f1;
-      --p9: #3d4589; --p9-bg: #eaecf8;
-      --salud: var(--p3); --salud-bg: var(--p3-bg);
+      --p0: #ff9500;
+      --p1: #34c759;
+      --p2: #007aff;
+      --p3: #ff2d55;
+      --p4: #af52de;
+      --p5: #ffcc00;
+      --p6: #1a7a65;
+      --p7: #1573a0;
+      --p8: #127a6a;
+      --p9: #3d4589;
+      --salud: var(--p3);
     }
 
     body {
@@ -288,7 +295,7 @@
       top: calc(100% + 6px);
       right: 0;
       min-width: 170px;
-      background: var(--surface);
+      background: var(--menu-bg);
       border: 0.5px solid var(--border-md);
       border-radius: var(--radius);
       box-shadow: 0 4px 16px rgba(0,0,0,0.18);
@@ -313,6 +320,11 @@
       transition: background 0.12s;
     }
     .cat-menu-item:hover { background: var(--fill); }
+
+    /* Ítem seleccionado: highlight neutro sutil — el acento marca la selección
+       vía el checkmark, no pinta la fila. */
+    .cat-menu-item.selected { background: var(--menu-highlight); }
+    .cat-menu-item.selected:hover { background: var(--menu-highlight); }
 
     .cat-menu-name { flex: 1; }
     .cat-menu-check { color: var(--accent); flex-shrink: 0; }
@@ -1579,7 +1591,7 @@ function renderCatMenu() {
   if (!catMenuOpen) return;
   menu.innerHTML = categories.length
     ? categories.map(cat => `
-        <button class="cat-menu-item" type="button" data-cat="${cat.id}">
+        <button class="cat-menu-item${selectedCat === cat.id ? ' selected' : ''}" type="button" data-cat="${cat.id}">
           <span class="cat-dot cat-p${cat.colorIndex}"></span>
           <span class="cat-menu-name">${escHtml(cat.name)}</span>
           ${selectedCat === cat.id ? '<svg class="cat-menu-check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
