@@ -238,7 +238,7 @@
 
     .input-wrap input {
       width: 100%;
-      padding-right: 118px;
+      padding-right: 172px;
     }
 
     .cat-select-btn {
@@ -249,7 +249,8 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      max-width: 108px;
+      min-width: 96px;
+      max-width: 152px;
       padding: 6px 8px;
       border: none;
       border-radius: var(--radius-sm);
@@ -262,6 +263,9 @@
     }
     .cat-select-btn:hover { background: var(--fill); }
 
+    /* Con categoría elegida: texto primario, como un valor — no un placeholder */
+    .cat-select-btn.has-value { color: var(--text); }
+
     .cat-select-dot {
       width: 8px;
       height: 8px;
@@ -271,6 +275,7 @@
     }
 
     #cat-select-label {
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -883,6 +888,16 @@
       font-family: var(--font);
     }
 
+    /* Sin tareas visibles en ninguna columna: un mensaje, no 3 drop zones sin sentido */
+    .board-empty-filter {
+      width: 100%;
+      text-align: center;
+      padding: 4rem 1rem;
+      color: var(--muted);
+      font-size: 14px;
+      font-family: var(--font);
+    }
+
     @media (max-width: 640px) {
       .board {
         scroll-snap-type: x mandatory;
@@ -1392,10 +1407,19 @@ function renderBoard() {
   if (dotsController)     dotsController.abort();
 
   const visible = tasks.filter(t => catFilter ? t.cat === catFilter : true);
-  const cols    = { todo: [], doing: [], done: [] };
+  const board = document.getElementById('board');
+
+  // Sin tareas visibles: no hay nada para arrastrar — un solo mensaje, no 3 drop zones
+  if (!visible.length) {
+    const catName = catFilter ? categories.find(c => c.id === catFilter)?.name : null;
+    board.innerHTML = `<div class="board-empty-filter">${catName ? `Sin tareas en ${escHtml(catName)}` : 'Sin tareas'}</div>`;
+    document.getElementById('board-dots').style.display = 'none';
+    return;
+  }
+
+  const cols = { todo: [], doing: [], done: [] };
   visible.forEach(t => cols[getTaskStatus(t)].push(t));
 
-  const board = document.getElementById('board');
   board.innerHTML = COL_ORDER.map(status => {
     const items   = cols[status];
     const isEmpty = items.length === 0;
@@ -1527,16 +1551,21 @@ function updateViewBtn() {
 
 // ── Dynamic renders ───────────────────────────────────────────────
 function renderCatSelector() {
+  const btn   = document.getElementById('cat-select-btn');
   const dot   = document.getElementById('cat-select-dot');
   const label = document.getElementById('cat-select-label');
-  if (!dot || !label) return;
+  if (!btn || !dot || !label) return;
   const cat = categories.find(c => c.id === selectedCat);
   if (cat) {
+    btn.classList.add('has-value');
     dot.className = `cat-select-dot cat-p${cat.colorIndex}`;
     label.textContent = cat.name;
+    label.title = cat.name;
   } else {
+    btn.classList.remove('has-value');
     dot.className = 'cat-select-dot';
-    label.textContent = 'categoría';
+    label.textContent = 'Categoría';
+    label.removeAttribute('title');
   }
   renderCatMenu();
 }
