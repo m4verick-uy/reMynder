@@ -20,6 +20,7 @@
       --subtle: rgba(235,235,245,0.3);
       --fill: rgba(120,120,128,0.32);
       --accent: #0a84ff;
+      --accent-fill: rgba(10,132,255,0.18);
       --accent-contrast: #ffffff;
       --radius: 10px;
       --radius-sm: 8px;
@@ -48,6 +49,7 @@
       --subtle: rgba(60,60,67,0.3);
       --fill: rgba(120,120,128,0.16);
       --accent: #007aff;
+      --accent-fill: rgba(0,122,255,0.1);
       --accent-contrast: #ffffff;
 
       --p0: #b05228; --p0-bg: #fdf0e8;
@@ -228,51 +230,106 @@
 
     .add-row button:hover { opacity: 0.85; }
 
-    .cats-row {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
+    /* ── Selector de categoría (patrón Recordatorios iOS): control dentro del input ── */
+    .input-wrap {
+      position: relative;
+      flex: 1;
     }
 
-    /* Chips selectoras de categoría (agregar tarea): dot + label, sin fondo */
-    .cats-row .cat-pill {
-      display: inline-flex;
+    .input-wrap input {
+      width: 100%;
+      padding-right: 118px;
+    }
+
+    .cat-select-btn {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 13px;
-      font-weight: 400;
-      padding: 2px 0;
+      max-width: 108px;
+      padding: 6px 8px;
       border: none;
+      border-radius: var(--radius-sm);
       background: none;
-      cursor: pointer;
-      transition: opacity 0.12s;
       font-family: var(--font);
+      font-size: 13px;
       color: var(--muted);
+      cursor: pointer;
+      transition: background 0.12s;
     }
+    .cat-select-btn:hover { background: var(--fill); }
 
-    .cats-row .cat-pill::before {
-      content: '';
-      width: 6px;
-      height: 6px;
+    .cat-select-dot {
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--subtle);
       flex-shrink: 0;
     }
 
-    .cats-row .cat-pill:not(.selected) { opacity: 0.55; }
-    .cats-row .cat-pill.selected { opacity: 1; font-weight: 500; }
+    #cat-select-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cat-select-chevron { flex-shrink: 0; }
+
+    .cat-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 170px;
+      background: var(--surface);
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+      padding: 6px;
+      z-index: 20;
+    }
+
+    .cat-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 10px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: none;
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .cat-menu-item:hover { background: var(--fill); }
+
+    .cat-menu-name { flex: 1; }
+    .cat-menu-check { color: var(--accent); flex-shrink: 0; }
+
+    .cat-menu-empty {
+      padding: 10px;
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--muted);
+    }
 
     /* El color de categoría vive SOLO en el dot y en el badge — nunca en píldoras de filtro (nav) */
-    .cats-row .cat-pill.cat-p0::before, .badge.cat-p0::before, .cat-dot.cat-p0, .color-dot.cat-p0 { background: var(--p0); }
-    .cats-row .cat-pill.cat-p1::before, .badge.cat-p1::before, .cat-dot.cat-p1, .color-dot.cat-p1 { background: var(--p1); }
-    .cats-row .cat-pill.cat-p2::before, .badge.cat-p2::before, .cat-dot.cat-p2, .color-dot.cat-p2 { background: var(--p2); }
-    .cats-row .cat-pill.cat-p3::before, .badge.cat-p3::before, .cat-dot.cat-p3, .color-dot.cat-p3 { background: var(--p3); }
-    .cats-row .cat-pill.cat-p4::before, .badge.cat-p4::before, .cat-dot.cat-p4, .color-dot.cat-p4 { background: var(--p4); }
-    .cats-row .cat-pill.cat-p5::before, .badge.cat-p5::before, .cat-dot.cat-p5, .color-dot.cat-p5 { background: var(--p5); }
-    .cats-row .cat-pill.cat-p6::before, .badge.cat-p6::before, .cat-dot.cat-p6, .color-dot.cat-p6 { background: var(--p6); }
-    .cats-row .cat-pill.cat-p7::before, .badge.cat-p7::before, .cat-dot.cat-p7, .color-dot.cat-p7 { background: var(--p7); }
-    .cats-row .cat-pill.cat-p8::before, .badge.cat-p8::before, .cat-dot.cat-p8, .color-dot.cat-p8 { background: var(--p8); }
-    .cats-row .cat-pill.cat-p9::before, .badge.cat-p9::before, .cat-dot.cat-p9, .color-dot.cat-p9 { background: var(--p9); }
+    .cat-select-dot.cat-p0, .badge.cat-p0::before, .cat-dot.cat-p0, .color-dot.cat-p0 { background: var(--p0); }
+    .cat-select-dot.cat-p1, .badge.cat-p1::before, .cat-dot.cat-p1, .color-dot.cat-p1 { background: var(--p1); }
+    .cat-select-dot.cat-p2, .badge.cat-p2::before, .cat-dot.cat-p2, .color-dot.cat-p2 { background: var(--p2); }
+    .cat-select-dot.cat-p3, .badge.cat-p3::before, .cat-dot.cat-p3, .color-dot.cat-p3 { background: var(--p3); }
+    .cat-select-dot.cat-p4, .badge.cat-p4::before, .cat-dot.cat-p4, .color-dot.cat-p4 { background: var(--p4); }
+    .cat-select-dot.cat-p5, .badge.cat-p5::before, .cat-dot.cat-p5, .color-dot.cat-p5 { background: var(--p5); }
+    .cat-select-dot.cat-p6, .badge.cat-p6::before, .cat-dot.cat-p6, .color-dot.cat-p6 { background: var(--p6); }
+    .cat-select-dot.cat-p7, .badge.cat-p7::before, .cat-dot.cat-p7, .color-dot.cat-p7 { background: var(--p7); }
+    .cat-select-dot.cat-p8, .badge.cat-p8::before, .cat-dot.cat-p8, .color-dot.cat-p8 { background: var(--p8); }
+    .cat-select-dot.cat-p9, .badge.cat-p9::before, .cat-dot.cat-p9, .color-dot.cat-p9 { background: var(--p9); }
 
     nav {
       display: flex;
@@ -378,7 +435,7 @@
       align-items: center;
       gap: 6px;
       font-family: var(--font);
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 400;
       color: var(--muted);
       flex-shrink: 0;
@@ -680,15 +737,29 @@
     }
 
     .board-col {
-      flex: 1;
+      flex-grow: 1;
+      flex-shrink: 1;
+      flex-basis: 0;
       min-width: 240px;
       display: flex;
       flex-direction: column;
       border-radius: var(--radius);
-      transition: background 0.15s;
+      transition: flex-grow 0.2s, background 0.15s, border-color 0.15s;
     }
 
-    .board-col.drag-over { background: var(--fill); }
+    /* Columna vacía: siempre visible, zona de drop descubrible aunque no tenga contenido */
+    .board-col.empty-col {
+      border: 1.5px dashed var(--border-md);
+      padding: 12px;
+    }
+
+    /* Al arrastrar, las tres columnas se igualan en ancho — el destino manda, no el contenido */
+    .board.dragging-active .board-col { flex-grow: 1 !important; }
+
+    .board-col.drag-over {
+      background: var(--accent-fill);
+      border-color: var(--accent);
+    }
 
     .board-col-header {
       padding: 4px 0 10px;
@@ -729,10 +800,10 @@
     }
 
     .board-card:active { cursor: grabbing; }
-    .board-card.dragging { opacity: 0.35; }
+    .board-card.dragging { opacity: 0.5; box-shadow: 0 0 0 2px var(--accent); }
 
     .board-card-text {
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.6;
       color: var(--text);
     }
@@ -875,11 +946,18 @@
       </div>
     </div>
     <div class="add-row">
-      <input type="text" id="new-task" placeholder="Nueva tarea..." autocomplete="off" />
+      <div class="input-wrap">
+        <input type="text" id="new-task" placeholder="Nueva tarea..." autocomplete="off" />
+        <button class="cat-select-btn" id="cat-select-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span class="cat-select-dot" id="cat-select-dot"></span>
+          <span id="cat-select-label">categoría</span>
+          <svg class="cat-select-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="cat-menu" id="cat-menu" style="display:none">
+          <!-- renderizado dinámicamente por renderCatMenu() -->
+        </div>
+      </div>
       <button id="add-btn">+ Agregar</button>
-    </div>
-    <div class="cats-row" id="cat-selector">
-      <!-- renderizado dinámicamente por renderCatSelector() -->
     </div>
   </header>
 
@@ -968,6 +1046,7 @@ let viewMode           = localStorage.getItem('viewMode') || 'list';
 let dragTaskId         = null;
 let boardDndController = null;
 let dotsController     = null;
+let catMenuOpen        = false;
 
 // ── Handle redirect result on page load ─────────────────────────
 getRedirectResult(auth).catch(err => {
@@ -1318,7 +1397,8 @@ function renderBoard() {
 
   const board = document.getElementById('board');
   board.innerHTML = COL_ORDER.map(status => {
-    const items = cols[status];
+    const items   = cols[status];
+    const isEmpty = items.length === 0;
     const cards = items.length
       ? items.map(t => `
           <div class="board-card" draggable="true" data-id="${t.id}" data-status="${status}">
@@ -1335,9 +1415,9 @@ function renderBoard() {
             </div>
           </div>
         `).join('')
-      : `<div class="board-empty">vacío</div>`;
+      : `<div class="board-empty">soltá acá</div>`;
     return `
-      <div class="board-col" data-col-status="${status}">
+      <div class="board-col${isEmpty ? ' empty-col' : ''}" data-col-status="${status}" style="flex-grow:${isEmpty ? 1 : 3}">
         <div class="board-col-header">
           <span>${COL_NAMES[status]}</span>
           <span class="board-col-count">${items.length}</span>
@@ -1358,12 +1438,14 @@ function initBoardDnd(board) {
     const card = e.target.closest('.board-card');
     if (!card) return;
     dragTaskId = card.dataset.id;
+    board.classList.add('dragging-active');
     requestAnimationFrame(() => card.classList.add('dragging'));
   }, { signal: sig });
 
   board.addEventListener('dragend', e => {
     const card = e.target.closest('.board-card');
     if (card) card.classList.remove('dragging');
+    board.classList.remove('dragging-active');
     board.querySelectorAll('.board-col').forEach(c => c.classList.remove('drag-over'));
   }, { signal: sig });
 
@@ -1445,17 +1527,36 @@ function updateViewBtn() {
 
 // ── Dynamic renders ───────────────────────────────────────────────
 function renderCatSelector() {
-  const sel = document.getElementById('cat-selector');
-  if (!sel) return;
-  if (!categories.length) {
-    sel.innerHTML = '<span style="font-size:12px;color:var(--muted);font-family:var(--font);padding:4px 0">sin categorías</span>';
-    return;
+  const dot   = document.getElementById('cat-select-dot');
+  const label = document.getElementById('cat-select-label');
+  if (!dot || !label) return;
+  const cat = categories.find(c => c.id === selectedCat);
+  if (cat) {
+    dot.className = `cat-select-dot cat-p${cat.colorIndex}`;
+    label.textContent = cat.name;
+  } else {
+    dot.className = 'cat-select-dot';
+    label.textContent = 'categoría';
   }
-  sel.innerHTML = categories.map(cat => `
-    <button class="cat-pill cat-p${cat.colorIndex}${selectedCat === cat.id ? ' selected' : ''}" data-cat="${cat.id}">
-      ${escHtml(cat.name)}
-    </button>
-  `).join('');
+  renderCatMenu();
+}
+
+function renderCatMenu() {
+  const menu = document.getElementById('cat-menu');
+  const btn  = document.getElementById('cat-select-btn');
+  if (!menu || !btn) return;
+  menu.style.display = catMenuOpen ? '' : 'none';
+  btn.setAttribute('aria-expanded', String(catMenuOpen));
+  if (!catMenuOpen) return;
+  menu.innerHTML = categories.length
+    ? categories.map(cat => `
+        <button class="cat-menu-item" type="button" data-cat="${cat.id}">
+          <span class="cat-dot cat-p${cat.colorIndex}"></span>
+          <span class="cat-menu-name">${escHtml(cat.name)}</span>
+          ${selectedCat === cat.id ? '<svg class="cat-menu-check" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+        </button>
+      `).join('')
+    : '<div class="cat-menu-empty">sin categorías</div>';
 }
 
 function renderNavCats() {
@@ -1563,9 +1664,25 @@ document.querySelector('nav').addEventListener('click', e => {
   if (btn) setCatFilter(btn.dataset.catFilter);
 });
 
-document.getElementById('cat-selector').addEventListener('click', e => {
+document.getElementById('cat-select-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  catMenuOpen = !catMenuOpen;
+  renderCatMenu();
+});
+
+document.getElementById('cat-menu').addEventListener('click', e => {
   const btn = e.target.closest('[data-cat]');
-  if (btn) selectCat(btn.dataset.cat);
+  if (!btn) return;
+  selectCat(btn.dataset.cat);
+  catMenuOpen = false;
+  renderCatMenu();
+});
+
+document.addEventListener('click', e => {
+  if (catMenuOpen && !e.target.closest('.input-wrap')) {
+    catMenuOpen = false;
+    renderCatMenu();
+  }
 });
 
 document.getElementById('task-list').addEventListener('click', e => {
