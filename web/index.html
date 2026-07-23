@@ -225,7 +225,10 @@
     .add-row input::placeholder { color: var(--muted); }
     .add-row input:focus { box-shadow: 0 0 0 1.5px var(--accent); }
 
-    .add-row button {
+    /* Hijo directo, no descendiente: si no, esto también capturaría los botones
+       anidados del selector de categoría (.cat-select-btn, .cat-menu-item), que
+       viven dentro de .input-wrap dentro de .add-row, y les pintaría el acento. */
+    .add-row > button {
       height: 40px;
       padding: 0 18px;
       border: none;
@@ -240,7 +243,7 @@
       white-space: nowrap;
     }
 
-    .add-row button:hover { opacity: 0.85; }
+    .add-row > button:hover { opacity: 0.85; }
 
     /* ── Selector de categoría (patrón Recordatorios iOS): control dentro del input ── */
     .input-wrap {
