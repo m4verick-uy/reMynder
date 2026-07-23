@@ -16,12 +16,10 @@
       --menu-bg: #2c2c2e;
       --menu-highlight: #3a3a3c;
       --border: rgba(84,84,88,0.65);
-      /* Bordes distintos por rol: tarjeta (sutil) vs input (algo más definido) */
-      --border-card: #2c2c2e;
-      --border-input: #38383a;
+      --border-md: #38383a;
       /* Texto: se deriva del fondo, no del componente — neutro→primario, translúcido→secundario, acento→máx. contraste */
       --text: #ebebf5;
-      --muted: #8e8e93;
+      --muted: #ebebf599;
       --subtle: rgba(235,235,245,0.3);
       --fill: rgba(120,120,128,0.32);
       /* Acento — ÚNICO token de marca. Cambiarlo acá y en el bloque light alcanza para toda la UI. */
@@ -55,13 +53,10 @@
       --menu-bg: #ffffff;
       --menu-highlight: #f0f0f2;
       --border: rgba(60,60,67,0.29);
-      /* Bordes distintos por rol: tarjeta (sutil) vs input (algo más definido) */
-      --border-card: #dcdce0;
-      --border-input: #d1d1d6;
+      --border-md: #dcdce0;
       /* Texto: se deriva del fondo, no del componente — neutro→primario, translúcido→secundario, acento→máx. contraste */
       --text: #1c1c1e;
-      /* #6e6e73 literal cae en 4.19:1 contra el fondo de página — se oscurece a #65656a para pasar 4.5:1 */
-      --muted: #65656a;
+      --muted: #3c3c43bf;
       --subtle: rgba(60,60,67,0.3);
       --fill: rgba(120,120,128,0.16);
       /* Acento — mismo token, valor calibrado para contraste AA sobre fondo claro. */
@@ -101,7 +96,7 @@
 
     .login-card {
       background: var(--surface);
-      border: 0.5px solid var(--border-card);
+      border: 0.5px solid var(--border-md);
       border-radius: 16px;
       padding: 3rem 2.5rem;
       text-align: center;
@@ -129,7 +124,7 @@
       align-items: center;
       gap: 10px;
       padding: 12px 24px;
-      border: 0.5px solid var(--border-card);
+      border: 0.5px solid var(--border-md);
       border-radius: var(--radius);
       background: var(--surface);
       color: var(--text);
@@ -217,9 +212,9 @@
       flex: 1;
       height: 40px;
       padding: 0 14px;
-      border: 0.5px solid var(--border-input);
+      border: none;
       border-radius: var(--radius-sm);
-      background: var(--surface);
+      background: var(--fill);
       color: var(--text);
       font-family: var(--font);
       font-size: 14px;
@@ -298,9 +293,7 @@
       white-space: nowrap;
     }
 
-    /* Color explícito e independiente del label: el chevron queda secundario
-       incluso cuando .has-value pone el label en texto primario. */
-    .cat-select-chevron { flex-shrink: 0; color: var(--muted); }
+    .cat-select-chevron { flex-shrink: 0; }
 
     .cat-menu {
       position: absolute;
@@ -308,7 +301,7 @@
       right: 0;
       min-width: 170px;
       background: var(--menu-bg);
-      border: 0.5px solid var(--border-card);
+      border: 0.5px solid var(--border-md);
       border-radius: var(--radius);
       box-shadow: 0 4px 16px rgba(0,0,0,0.18);
       padding: 6px;
@@ -396,7 +389,7 @@
       color: var(--accent-contrast);
     }
 
-    .sep { width: 1px; height: 16px; background: var(--border-card); margin: 0 4px; flex-shrink: 0; }
+    .sep { width: 1px; height: 16px; background: var(--border-md); margin: 0 4px; flex-shrink: 0; }
 
     main { padding: 1.5rem 1.5rem 5rem; max-width: 680px; margin: 0 auto; }
     main.board-mode { max-width: none; padding: 0; }
@@ -416,7 +409,7 @@
       gap: 12px;
       padding: 14px 16px;
       background: var(--surface);
-      border: 0.5px solid var(--border-card);
+      border: 0.5px solid var(--border-md);
       border-radius: var(--radius);
       margin-bottom: 10px;
       transition: opacity 0.2s;
@@ -428,7 +421,7 @@
       width: 22px;
       height: 22px;
       border-radius: 50%;
-      border: 1.5px solid var(--border-card);
+      border: 1.5px solid var(--border-md);
       background: transparent;
       cursor: pointer;
       flex-shrink: 0;
@@ -607,7 +600,7 @@
     /* ── Category rows: una sola tarjeta agrupada, filas separadas por hairline ── */
     #categories-list {
       background: var(--surface);
-      border: 0.5px solid var(--border-card);
+      border: 0.5px solid var(--border-md);
       border-radius: var(--radius);
       padding: 0 16px;
     }
@@ -698,9 +691,9 @@
       min-width: 140px;
       height: 36px;
       padding: 0 12px;
-      border: 0.5px solid var(--border-input);
+      border: none;
       border-radius: var(--radius-sm);
-      background: var(--surface);
+      background: var(--fill);
       color: var(--text);
       font-family: var(--font);
       font-size: 14px;
@@ -744,7 +737,7 @@
       margin-top: 1.5rem;
       height: 44px;
       padding: 0 20px;
-      border: 0.5px solid var(--border-card);
+      border: 0.5px solid var(--border-md);
       border-radius: var(--radius);
       background: var(--surface);
       color: var(--accent);
@@ -779,7 +772,7 @@
 
     /* Columna vacía: siempre visible, zona de drop descubrible aunque no tenga contenido */
     .board-col.empty-col {
-      border: 1.5px dashed var(--border-card);
+      border: 1.5px dashed var(--border-md);
       padding: 12px;
     }
 
@@ -796,8 +789,7 @@
       border-bottom: 0.5px solid var(--border);
       font-family: var(--font);
       font-weight: 500;
-      /* Acento reservado para acción primaria + estado activo — el encabezado es neutro */
-      color: var(--muted);
+      color: var(--accent);
       font-size: 13px;
       display: flex;
       align-items: center;
@@ -819,7 +811,7 @@
 
     .board-card {
       background: var(--surface);
-      border: 0.5px solid var(--border-card);
+      border: 0.5px solid var(--border-md);
       border-radius: var(--radius);
       padding: 12px 14px;
       cursor: grab;
