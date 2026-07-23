@@ -293,7 +293,9 @@
       white-space: nowrap;
     }
 
-    .cat-select-chevron { flex-shrink: 0; }
+    /* Color propio, independiente del label: el chevron queda siempre secundario,
+       aunque .has-value ponga el nombre en texto primario. */
+    .cat-select-chevron { flex-shrink: 0; color: var(--muted); }
 
     .cat-menu {
       position: absolute;
