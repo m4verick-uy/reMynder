@@ -87,11 +87,33 @@ creadas por el usuario**.
 - Sanitización XSS con `escHtml()` antes de todo `innerHTML`
 
 ### CSS
+
+**Regla de jerarquía visual (no negociable):** un control secundario no debe ser
+descendiente de un elemento con tratamiento visual de acción primaria. Si comparten
+contenedor, comparten herencia, y separarlos después cuesta más que estructurarlos
+bien desde el principio.
+
+Motivo: un selector como `.add-row button` (descendiente, sin `>`) captura *todo*
+`<button>` anidado en `.add-row`, sin importar cuántos niveles de profundidad —
+incluyendo controles secundarios que viven dentro de un wrapper hijo (`.input-wrap`,
+un menú desplegable, etc.). Como esa clase de acción primaria suele tener más
+especificidad que la clase propia del control secundario, gana la cascada aunque el
+control secundario declare su propio `background`. Esto costó varias rondas de
+debugging (el bug real vivía en el selector del contenedor, no en el componente).
+Al escribir CSS para un botón de acción primaria, usar `>` (hijo directo) salvo que
+el selector deba aplicar a descendientes intencionalmente — y si un control
+secundario debe vivir dentro del mismo wrapper que uno primario, verificar
+explícitamente que ningún selector del primario lo alcance por descendencia.
+
 - Variables CSS en `:root` para theming (dark por defecto, light override)
 - Naming: `--bg`, `--surface`, `--border`, `--border-md`, `--text`, `--muted`, `--subtle`
 - Cada categoría tiene `--{cat}` (texto) y `--{cat}-bg` (fondo)
 - Clases de componentes: `.task-item`, `.check-btn`, `.badge`, `.cat-pill`, `.nav-btn`
 - Radios: `--radius` (12px), `--radius-sm` (8px), `--radius-pill` (999px)
+- ⚠️ Esta lista de variables/clases quedó desactualizada tras el rediseño visual de
+  julio 2026 (acento teal, tokens de superficie separados, selector de categoría
+  tipo Recordatorios de iOS). Verificar contra `web/index.html` antes de asumir
+  nombres — pendiente una pasada de actualización completa de esta sección.
 
 ### HTML
 - Dos root divs: `#login-screen` y `#app` — ambos `display:none` al inicio
