@@ -921,6 +921,22 @@
       font-family: var(--font);
     }
 
+    /* Contenedor centrado del área de contenido en monitores anchos. Header (barra
+       superior) y footer se dejan afuera a propósito — siguen a ancho completo,
+       con su contenido anclado a los bordes de la ventana (patrón Apple). El
+       padding lateral de 24px ya lo aportan header/nav/.board por su cuenta, así
+       que solo hace falta acotar el ancho y centrar — sin tocar nada por debajo
+       de 1200px. */
+    @media (min-width: 1200px) {
+      .add-row,
+      nav,
+      .board {
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
     @media (max-width: 640px) {
       .board {
         scroll-snap-type: x mandatory;
