@@ -1,0 +1,49 @@
+💎 Diamantina
+
+├── 00 - Visión y principios
+
+# Manifiesto Diamantina
+
+## Where every feature earns its place
+
+### Nuestro ADN
+
+Toda decisión introduce complejidad. Solo algunas introducen valor. Nuestra responsabilidad es distinguirlas.
+
+Este principio guía todas nuestras decisiones.
+
+---
+
+### 1. Resolver un problema real y nombrado.
+
+Si no podés expresar en una sola frase qué problema del usuario resuelve una funcionalidad, esa funcionalidad no entra.
+
+### 2. Cada funcionalidad se gana su lugar.
+
+Una funcionalidad no existe porque pueda desarrollarse, sino porque aporta un valor claro. Si la quitás y nadie la extraña, nunca se ganó estar.
+
+### 3. La complejidad debe surgir del producto, nunca de la arquitectura.
+
+La complejidad inevitable proviene del problema que resolvemos, no de cómo decidimos implementarlo. Si algo es difícil de entender y esa dificultad nace de nuestro diseño, debemos simplificarlo o eliminarlo.
+
+### 4. Construir un producto que amarías usar.
+
+El estándar no es que funcione. El estándar es querer usarlo todos los días. Si no te enamora, todavía le falta.
+
+
+
+
+
+
+├── 01 - Arquitectura
+├── 02 - Roadmap
+├── 03 - Agentes IA
+├── 04 - Backend
+├── 05 - Frontend
+├── 06 - UX
+├── 07 - Branding
+├── 08 - Producto
+├── 09 - Marketing
+├── 10 - Inversores
+├── 11 - Pitch
+├── 12 - Ideas

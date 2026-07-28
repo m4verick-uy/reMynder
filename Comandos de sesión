@@ -1,0 +1,33 @@
+Comandos de sesión
+
+Inicio (siempre primero):
+Actúa como Session Start de ReMynder
+
+Cierre (siempre al final):
+Actúa como Session End de ReMynder
+
+Tipos de tarea
+
+FEATURE — algo nuevo para el usuario:
+Actúa como Orchestrator de ReMynder.
+Feature: [descripción]
+
+HOTFIX — algo roto:
+Actúa como Orchestrator de ReMynder.
+Hotfix [visual/lógico/datos]: [descripción]
+Límites: [qué NO tocar]
+
+REFACTOR — mejorar sin cambiar comportamiento:
+Actúa como Orchestrator de ReMynder.
+Refactor: [qué y por qué]
+Límites: el comportamiento visible no debe cambiar
+
+RESEARCH — explorar antes de decidir:
+Actúa como Orchestrator de ReMynder.
+Research: [pregunta]
+Solo análisis, sin implementar nada.
+
+DECISION — criterio antes de actuar:
+Actúa como Orchestrator de ReMynder.
+Decisión pendiente: [contexto y opciones]
+Dame tu recomendación antes de implementar.
