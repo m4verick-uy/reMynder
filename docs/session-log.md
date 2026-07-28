@@ -2,6 +2,118 @@
 
 ---
 
+## Sesión 2026-07-28 (Debian 12) — mantenimiento de entorno, no código de producto
+**Entorno:** Debian 12 — topgun (x86_64)
+
+### Qué se hizo
+- `claude doctor` reveló auto-update fallido (`install_failed`) desde 2026-07-28
+- Diagnóstico: el DNS primario de la red (`172.24.2.254`) responde `REFUSED` para
+  dominios externos (ej. `downloads.claude.ai`). El resolver que usa Node/Claude
+  Code (`c-ares`, vía `dns.resolve4`) no hace fallback al segundo servidor ante un
+  `REFUSED` explícito — a diferencia de `dns.lookup`/glibc, que sí tiene fallback
+  (por eso `dig`/`getent` resolvían bien pero el auto-update de Claude no)
+- Fix implementado, scoped solo a Claude Code, sin tocar el DNS del sistema:
+  - `~/.claude/resolv-fallback.conf` — `resolv.conf` alternativo con `172.24.3.45`
+    (el servidor que sí resuelve externo) primero
+  - `~/.local/bin-wrappers/claude` — wrapper que lanza el binario nativo dentro de
+    un mount namespace propio (sin privilegios, vía `unshare`) con ese DNS
+    alternativo, invisible para el resto del sistema
+  - `~/.bashrc` — `~/.local/bin-wrappers` antepuesto al `PATH`, así toda shell
+    nueva usa el wrapper automáticamente
+- Verificado: `resolv.conf` real del sistema intacto; update manual vía wrapper
+  `2.1.215 → 2.1.220` exitoso; shell interactiva nueva resuelve `claude` al
+  wrapper y reporta "up to date" sin error
+- Se trackearon dos archivos sueltos en la raíz del repo (`"Comandos de sesión"`
+  y `"💎 Diamantina"`) — commit `922a761`
+
+### Decisiones tomadas
+- Fix de DNS scoped al proceso de Claude (namespace + wrapper) en lugar de
+  reordenar `/etc/resolv.conf` del sistema — evita tocar infraestructura de red
+  compartida por una config que probablemente es intencional (split-horizon DNS
+  corporativo), y no requiere sudo
+- Nada de este trabajo toca `web/index.html` ni el producto — es mantenimiento
+  de entorno local del desarrollador, documentado acá solo para que quede
+  registro de por qué el `PATH`/`.bashrc` de esta máquina cambió
+
+### Pendiente para próxima sesión
+- [ ] La sesión de Claude Code que estaba corriendo durante este fix se lanzó
+      *antes* de crear el wrapper — su chequeo de auto-update en background va a
+      seguir mostrando `Last update attempt: failed` en `claude doctor` hasta
+      reiniciar la terminal/sesión. Confirmar que una sesión nueva ya no lo
+      muestra
+- [ ] `CLAUDE.md` sigue señalando su propia sección CSS como desactualizada tras
+      el rediseño (pendiente de sesiones anteriores)
+- [ ] Próxima feature del roadmap: edición de tareas o fechas de vencimiento
+
+### Estado del repo
+- Branch: develop (al día con `origin/develop`)
+- Último commit: `922a761 track workflow commands and Diamantina notes`
+- Deploy: sin cambios de código en esta sesión, no aplica
+
+---
+
+## Sesiones 2026-07-15 a 2026-07-23 (Debian 12) — reconstruido desde `git log`
+**Nota:** esta entrada no se registró en vivo sesión por sesión; se reconstruyó a partir de
+`git log` porque el log quedó desactualizado tras la sesión del 2026-06-11/12. El detalle de
+duración y contexto de cada commit puede ser incompleto.
+
+### Qué se hizo
+
+**Vercel — integración Git (2026-07-15/20)**
+- Documentado el flujo preview develop/main
+- Corregida documentación (deploy manual vía CLI) y luego vuelta a corregir al confirmarse que
+  la integración Git↔Vercel quedó activa (`production branch: main`)
+
+**Rediseño visual completo (2026-07-21/23)**
+- Probado y revertido un rediseño "minimalista write.as" (flat chrome, acento único, dots de
+  categoría) — no prosperó, revertido el mismo día
+- Adoptado un sistema visual Apple/iOS: acento `systemBlue` → luego afinado a teal
+  mode-calibrado, pills de filtro mono-color, dots de categoría, tarjetas hairline, fuente de
+  sistema, sentence case
+- Selector de categoría rediseñado estilo Recordatorios de iOS (picker que muestra el valor no
+  el label, ancho de truncamiento corregido, columnas de board proporcionales, affordance de
+  drag)
+- Iteración de tokens de color: texto derivado de contraste (`accent-contrast`, `muted`,
+  separación page/border en light), bug de fondo del dropdown de categoría corregido, mapeo de
+  color de categoría fijado
+- Probado y revertido un split de border tokens (card vs input) — no funcionó visualmente,
+  revertido el mismo día; en su lugar: inputs con borde sólido, texto neutro en headers de
+  columna (matcheando el mockup de referencia)
+- Restaurado el acento en headers de columna del board; chevron fijado a color de texto
+  secundario independiente del label de categoría seleccionada
+- **Bug de bleed de acento:** el selector `.add-row button` (descendiente) capturaba botones
+  secundarios anidados dentro de `.input-wrap` y el menú de categoría — fix: escopar a hijo
+  directo (`>`)
+- Agregada a `CLAUDE.md` la regla de jerarquía CSS no negociable (selectores de acción primaria
+  deben usar `>`, no descendencia) para prevenir que se repita este bug
+- Contenido restringido a un contenedor centrado de 1200px en viewports anchos
+
+### Decisiones tomadas
+- Se descartó la línea "write.as minimalista" en favor de un sistema Apple/iOS — más alineado
+  con el posicionamiento "calidad Apple-like" del producto
+- Border tokens: un solo token compartido entre card e input, no split — el split visualmente
+  no funcionó
+- Regla de jerarquía CSS (`>` obligatorio en selectores de acción primaria) promovida a
+  estándar no negociable del proyecto, documentada en `CLAUDE.md`
+
+### Pendiente para próxima sesión
+- [ ] `CLAUDE.md` señala su propia sección CSS como desactualizada tras este rediseño (nombres
+      de variables/clases) — falta una pasada completa de actualización de esa sección
+- [ ] No quedó registro de validación visual en preview/producción de estos cambios — verificar
+      `remynder-dev.vercel.app` antes de mergear `develop` → `main`
+- [ ] Próxima feature del roadmap: edición de tareas o fechas de vencimiento (sigue pendiente
+      de sesiones anteriores)
+- [ ] Dos archivos sin seguimiento en la raíz del repo con nombres extraños
+      (`"Comandos de sesión"`, `"💎 Diamantina"`) — investigar origen, no son parte del código
+
+### Estado del repo
+- Branch: develop (al día con `origin/develop`, sin commits sin pushear)
+- Último commit: `5898383 feat: constrain content area to a centered 1200px container on wide viewports`
+- Deploy: automático vía integración Git↔Vercel a `remynder-dev.vercel.app` (preview) — no
+  confirmado visualmente en esta entrada
+
+---
+
 ## Sesión 2026-06-11/12 (Debian 12)
 **Entorno:** Debian 12 — topgun (x86_64)
 **Duración aproximada:** ~3 horas
