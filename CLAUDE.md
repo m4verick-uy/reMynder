@@ -34,11 +34,11 @@ empresa de software personal fundada en Uruguay, orientada a calidad Apple-like.
 | Auth | Firebase Authentication — Google OAuth 2.0 |
 | Base de datos | Cloud Firestore (NoSQL, tiempo real) |
 | Hosting | Vercel (deploy estático) |
-| Fuentes | Google Fonts — DM Sans + DM Mono |
+| Fuentes | Sin Google Fonts — pila de fuente de sistema (`-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif`) |
 | Firebase SDK | CDN gstatic.com v10.12.0 (módulos ES) |
 
 **No hay backend propio. No hay npm. No hay proceso de build.**
-Un único `index.html` que el browser ejecuta directamente.
+Un único `web/index.html` que el browser ejecuta directamente.
 
 ---
 
@@ -46,10 +46,17 @@ Un único `index.html` que el browser ejecuta directamente.
 
 ```
 reMynder/
-├── index.html          # Toda la app: HTML + CSS + JS en un único archivo
+├── web/
+│   ├── index.html         # Toda la app: HTML + CSS + JS en un único archivo
+│   └── assets/            # Assets estáticos
+├── docs/                  # Documentación técnica, session-log.md, y docs por feature
+│                          # (research/stories/spec/test-report/validation-{feature}.md)
+├── .agents/                # Definiciones de los agentes de la Software Factory
 ├── .vercel/
-│   └── project.json    # Linkeo Vercel (projectId, orgId)
-└── documentacion.md    # Documentación técnica del proyecto
+│   └── project.json       # Linkeo Vercel (projectId, orgId) — gitignored
+├── vercel.json
+├── README.md
+└── CLAUDE.md
 ```
 
 ---
@@ -105,24 +112,48 @@ el selector deba aplicar a descendientes intencionalmente — y si un control
 secundario debe vivir dentro del mismo wrapper que uno primario, verificar
 explícitamente que ningún selector del primario lo alcance por descendencia.
 
-- Variables CSS en `:root` para theming (dark por defecto, light override)
-- Naming: `--bg`, `--surface`, `--border`, `--border-md`, `--text`, `--muted`, `--subtle`
-- Cada categoría tiene `--{cat}` (texto) y `--{cat}-bg` (fondo)
-- Clases de componentes: `.task-item`, `.check-btn`, `.badge`, `.cat-pill`, `.nav-btn`
-- Radios: `--radius` (12px), `--radius-sm` (8px), `--radius-pill` (999px)
-- ⚠️ Esta lista de variables/clases quedó desactualizada tras el rediseño visual de
-  julio 2026 (acento teal, tokens de superficie separados, selector de categoría
-  tipo Recordatorios de iOS). Verificar contra `web/index.html` antes de asumir
-  nombres — pendiente una pasada de actualización completa de esta sección.
+Ejemplo real en el código: `.add-row > button` (`web/index.html`).
+
+- Variables CSS en `:root` para theming (dark por defecto, `html[data-theme="light"]` override)
+- Superficies: `--bg`, `--surface`, `--menu-bg`, `--menu-highlight`
+- Bordes: `--border` (hairline translúcido), `--border-md` (sólido, algo más marcado)
+- Texto derivado del fondo, no del componente: `--text` (primario), `--muted` (secundario,
+  translúcido), `--subtle` (terciario — iconos/dots inactivos, texto tachado), `--fill`
+  (relleno translúcido para hover/estado neutro, ej. `.nav-btn` inactivo)
+- Acento — **único token de marca**: `--accent` (+ `--accent-fill` para fondos translúcidos,
+  `--accent-contrast` para texto/ícono encima de `--accent`). `--accent-contrast` se recalibra
+  por tema porque el mismo accent no da contraste AA en ambos fondos (dark: contraste oscuro
+  sobre teal claro; light: blanco sobre teal oscuro). Cambiar `--accent` en los dos bloques
+  (`:root` y `html[data-theme="light"]`) alcanza para toda la UI — no hay accent hardcodeado
+  fuera de esos dos lugares
+- Paleta de categoría: `--p0` a `--p9`, mapeo fijo por índice — no por nombre de variable como
+  antes (`--p2` = antel, `--p3` = salud, etc.; ver comentario `seedCategories` en
+  `web/index.html` para el mapeo completo). El color de categoría vive *solo* en dots
+  (`.cat-dot`, `.cat-select-dot`, `.color-dot`, `.badge::before`) y nunca en píldoras de
+  filtro (`.nav-btn`), que son siempre mono-color (acento si está activa, `--fill` si no)
+- Radios: `--radius` (10px), `--radius-sm` (8px), `--radius-pill` (999px)
+- Clases de componentes por área — lista no exhaustiva, `web/index.html` es la fuente de verdad:
+  - Login: `.login-screen`, `.login-card`, `.login-title`, `.login-btn`
+  - Header/nav: `header`, `.user-info`, `.nav-btn` (`.active`)
+  - Agregar tarea: `.add-row`, `.input-wrap`, `.cat-select-btn` (`.has-value`), `.cat-menu`,
+    `.cat-menu-item` (`.selected`)
+  - Lista: `.task-item` (`.done`), `.check-btn` (`.done`), `.badge`
+  - Board (Kanban): `.board`, `.board-col` (`.empty-col`, `.drag-over`), `.board-card`
+    (`.dragging`), `.board-dots`
+  - Ajustes/categorías: `#categories-list`, `.cat-row`, `.color-picker`, `.color-dot` (`.selected`)
+- Layout: `.add-row`, `nav` y `.board` se centran a `max-width: 1200px` en viewports ≥1200px
+  vía media query; `header`/`footer` quedan siempre a ancho completo (patrón Apple)
 
 ### HTML
-- Dos root divs: `#login-screen` y `#app` — ambos `display:none` al inicio
+- Tres root divs: `#login-screen`, `#app` y `#settings-screen` — los tres `display:none` al inicio
 - `onAuthStateChanged` decide cuál mostrar (evita FOUC de autenticación)
 - Anti-FOUC de tema: script síncrono en `<head>` aplica `data-theme` antes del render
 
 ### Tipografía
-- `DM Mono` para títulos, badges, contadores, botones secundarios
-- `DM Sans` para texto de tareas, inputs, botones primarios
+- Fuente única de sistema (`--font`), sin Google Fonts: `-apple-system, BlinkMacSystemFont,
+  'SF Pro Text', system-ui, sans-serif` — no hay distinción de familia por tipo de texto
+- La jerarquía tipográfica se logra con tamaño/peso/color (`--text`/`--muted`/`--subtle`), no
+  con fuentes distintas
 
 ---
 
