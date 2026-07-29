@@ -2,6 +2,45 @@
 
 ---
 
+## Sesión 2026-07-29 (Debian 12) — confirmación fix DNS/auto-update
+**Entorno:** Debian 12 — topgun (x86_64)
+
+### Qué se hizo
+- Sesión nueva de Claude Code (lanzada después del fix de la sesión 2026-07-28),
+  verificado que corre efectivamente a través del wrapper:
+  - `which claude` → `~/.local/bin-wrappers/claude`
+  - Variables de entorno `REAL_CLAUDE`/`RESOLV_OVERRIDE` presentes, seteadas por
+    el wrapper
+  - `/etc/resolv.conf` dentro del namespace del wrapper lista `172.24.3.45`
+    primero, como se diseñó
+  - `claude update` manual dentro de esta sesión: `Claude Code is up to date
+    (2.1.220)`, sin error de DNS
+- Investigado un hallazgo inicial que parecía preocupante: `ps`/`whoami` dentro
+  de la sesión muestran `root`. Verificado con `/proc/self/uid_map` (`0 1000 1`)
+  que es el mapeo esperado de `unshare --user --map-root-user`: UID 0 dentro
+  del namespace mapea al UID real 1000 (`m4verick`) fuera de él. No es root
+  real, no hay escalación de privilegios — el wrapper funciona como está
+  documentado en su propio comentario ("sin privilegios, vía unshare")
+- `claude doctor` mostró un intento de auto-update en background fallado
+  (`install_failed`, timestamp 11:35) — pero es anterior al arranque de esta
+  sesión (11:40 según `ps lstart`), es decir, un registro viejo de antes de
+  que esta sesión existiera. No indica un problema vigente
+
+### Decisiones tomadas
+- Se da por cerrado el pendiente de la sesión 2026-07-28/07-29: el fix de DNS
+  del wrapper queda confirmado como funcional para invocaciones interactivas
+  de `claude` en una sesión nueva
+
+### Pendiente para próxima sesión
+- [ ] Próxima feature del roadmap: edición de tareas o fechas de vencimiento
+
+### Estado del repo
+- Branch: develop (al día con `origin/develop`, working tree limpio)
+- Sin cambios de código de producto esta sesión — solo verificación de
+  entorno local
+
+---
+
 ## Sesión 2026-07-29 (Debian 12) — docs sync + merge a producción
 **Entorno:** Debian 12 — topgun (x86_64)
 
@@ -31,10 +70,10 @@
   recién corregida hubiera sido inconsistente
 
 ### Pendiente para próxima sesión
-- [ ] Probar en una sesión de Claude Code nueva que el fix de DNS/auto-update
+- [x] Probar en una sesión de Claude Code nueva que el fix de DNS/auto-update
       (sesión 2026-07-28) efectivamente resuelve el problema — la sesión
       anterior no pudo confirmarlo porque seguía siendo el mismo proceso
-      lanzado antes del fix
+      lanzado antes del fix — **confirmado 2026-07-29, ver entrada siguiente**
 - [ ] Próxima feature del roadmap: edición de tareas o fechas de vencimiento
 
 ### Estado del repo
