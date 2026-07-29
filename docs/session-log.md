@@ -2,6 +2,48 @@
 
 ---
 
+## Sesión 2026-07-29 (Debian 12) — docs sync + merge a producción
+**Entorno:** Debian 12 — topgun (x86_64)
+
+### Qué se hizo
+- Pasada completa de actualización de `CLAUDE.md` (pendiente arrastrado de la
+  sesión anterior, sección CSS marcada como desactualizada tras el rediseño
+  Apple/iOS de julio 2026):
+  - Sección CSS: variables/clases reales verificadas contra `web/index.html`
+    (superficies, texto derivado de fondo, acento único token, paleta `--p0`
+    a `--p9`, radios, listado de clases por área, layout centrado 1200px)
+  - Tipografía y tabla de Stack: corregido — no hay DM Sans/DM Mono ni Google
+    Fonts, es fuente de sistema única (`-apple-system...`)
+  - HTML: corregido conteo de root divs (son tres: `#login-screen`, `#app`,
+    `#settings-screen`, no dos)
+  - Estructura del proyecto: corregido `index.html` en la raíz →
+    `web/index.html`, árbol actualizado con `docs/`, `.agents/`, etc.
+  - Commit `bca6481`, pusheado a `develop`
+- Confirmado con el Ingeniero Jefe (ya revisado) → merge `develop` → `main`,
+  fast-forward `ea3c778..bca6481`, pusheado a `main`
+- Deploy automático a producción vía integración Git↔Vercel — confirmado
+  funcionando por el Ingeniero Jefe
+
+### Decisiones tomadas
+- Al hacer la pasada de CSS se corrigieron también Tipografía/Fuentes/root
+  divs/Estructura del proyecto aunque no eran el pedido original — mismo
+  origen (rediseño de julio), dejarlos desactualizados al lado de la sección
+  recién corregida hubiera sido inconsistente
+
+### Pendiente para próxima sesión
+- [ ] Probar en una sesión de Claude Code nueva que el fix de DNS/auto-update
+      (sesión 2026-07-28) efectivamente resuelve el problema — la sesión
+      anterior no pudo confirmarlo porque seguía siendo el mismo proceso
+      lanzado antes del fix
+- [ ] Próxima feature del roadmap: edición de tareas o fechas de vencimiento
+
+### Estado del repo
+- Branch: develop (al día con `origin/develop`)
+- Último commit: `bca6481 docs: sync CLAUDE.md with post-redesign CSS/typography and real project structure`
+- Deploy: ✅ producción — merge a `main` + push, confirmado funcionando
+
+---
+
 ## Sesión 2026-07-28 (Debian 12) — mantenimiento de entorno, no código de producto
 **Entorno:** Debian 12 — topgun (x86_64)
 
