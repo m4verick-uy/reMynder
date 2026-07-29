@@ -116,7 +116,10 @@ Ejemplo real en el código: `.add-row > button` (`web/index.html`).
 
 - Variables CSS en `:root` para theming (dark por defecto, `html[data-theme="light"]` override)
 - Superficies: `--bg`, `--surface`, `--menu-bg`, `--menu-highlight`
-- Bordes: `--border` (hairline translúcido), `--border-md` (sólido, algo más marcado)
+- Bordes: `--border` (hairline translúcido), `--border-md` (sólido, algo más marcado),
+  `--border-card` (borde de `.task-item`/`.board-card` — en dark theme igual a
+  `--border-md`, en light theme un gris más marcado porque `--border-md` queda
+  demasiado sutil sobre `--surface` blanco)
 - Texto derivado del fondo, no del componente: `--text` (primario), `--muted` (secundario,
   translúcido), `--subtle` (terciario — iconos/dots inactivos, texto tachado), `--fill`
   (relleno translúcido para hover/estado neutro, ej. `.nav-btn` inactivo)
