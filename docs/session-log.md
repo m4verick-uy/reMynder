@@ -25,13 +25,35 @@
   (`install_failed`, timestamp 11:35) — pero es anterior al arranque de esta
   sesión (11:40 según `ps lstart`), es decir, un registro viejo de antes de
   que esta sesión existiera. No indica un problema vigente
+- Al commitear y pushear el update de este mismo log, apareció un bug nuevo
+  del wrapper: `git push` por SSH fallaba con `Permission denied` en
+  `/root/.ssh/known_hosts`. Causa: dentro del namespace (`--map-root-user`),
+  euid=0 mapea al UID real (1000) para permisos de archivo, pero `ssh`
+  resuelve su `~/.ssh/known_hosts` por defecto vía la entrada de
+  `/etc/passwd` para uid 0 (`/root`), ignorando `$HOME` — y `/root/.ssh` es
+  del root real del host, inaccesible para el UID mapeado
+  - Workaround puntual: `GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/home/m4verick/.ssh/known_hosts"`
+  - Fix definitivo en el wrapper (`~/.local/bin-wrappers/claude`): se exporta
+    `GIT_SSH_COMMAND` con esa misma opción antes del `exec unshare`, para que
+    toda sesión nueva lo tenga seteado automáticamente. Verificado que la
+    variable se propaga correctamente a través del `unshare` (probado con una
+    invocación manual del mismo namespace). No aplica a la sesión actual
+    (ya arrancada antes del fix) — solo a sesiones lanzadas después de este
+    cambio
 
 ### Decisiones tomadas
 - Se da por cerrado el pendiente de la sesión 2026-07-28/07-29: el fix de DNS
   del wrapper queda confirmado como funcional para invocaciones interactivas
   de `claude` en una sesión nueva
+- El fix de `GIT_SSH_COMMAND` se agrega al mismo wrapper en vez de crear uno
+  nuevo — mismo mecanismo (namespace + variables exportadas antes del
+  `exec`), mismo archivo, para no fragmentar la lógica de arranque en varios
+  lugares
 
 ### Pendiente para próxima sesión
+- [ ] Confirmar en una sesión de Claude Code nueva (lanzada después de este
+      fix) que `git push`/`pull` por SSH funciona sin el workaround manual de
+      `GIT_SSH_COMMAND`
 - [ ] Próxima feature del roadmap: edición de tareas o fechas de vencimiento
 
 ### Estado del repo
