@@ -73,19 +73,19 @@ al form específico.)
 
 ---
 
-### Observación — visibilidad de `.board-card-actions` en desktop
+### Observación — visibilidad de `.board-card-actions` en desktop — **RESUELTO 2026-08-11**
 
 `.board-card-actions` (contenedor de los botones mover/eliminar/**editar**)
-es `display: none` por defecto y solo se fuerza `display: flex` bajo
-`@media (max-width: 640px)`. No se encontró ninguna regla `:hover` que la
-revele en desktop. Esto es **comportamiento preexistente**, no introducido
-por esta feature — ya afectaba a `move-prev`/`move-next`/`delete` antes del
-cambio. El nuevo botón de editar hereda exactamente el mismo comportamiento
-(visible en mobile, oculto en desktop sin hover). La Historia 2 no
-especificó explícitamente el alcance desktop/mobile, así que no se trata como
-bug de esta feature, pero se deja documentado porque el Ingeniero Jefe podría
-querer decidir sobre esto en una feature aparte (agregar hover-reveal en
-desktop para toda `.board-card-actions`, no solo para editar).
+era `display: none` por defecto y solo se forzaba `display: flex` bajo
+`@media (max-width: 640px)`. No había ninguna regla `:hover` que la revelara
+en desktop. Era **comportamiento preexistente**, no introducido por esta
+feature — ya afectaba a `move-prev`/`move-next`/`delete` antes del cambio.
+
+El Ingeniero Jefe pidió como hotfix habilitar la edición en modo tablero
+también en desktop. Corregido: `.board-card-actions` pasa a `display: flex`
+por defecto (mismo criterio que `.task-item`, íconos siempre visibles, sin
+hover-gating), y se eliminó la regla redundante del media query mobile que
+ya no aportaba nada. Beneficia también a mover/eliminar, no solo a editar.
 
 ---
 

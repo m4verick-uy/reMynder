@@ -67,11 +67,10 @@ sites a su contenedor antes de cerrar la feature — no llegó a producción.
 
 ### Feedback para el equipo
 
-- La observación sobre `.board-card-actions` (oculto en desktop sin
-  hover-reveal) es preexistente — ya afectaba a mover/eliminar antes de esta
-  feature. El nuevo botón de editar hereda el mismo comportamiento por
-  consistencia, no lo empeora. Queda como candidato a hotfix/feature aparte
-  si el Ingeniero Jefe quiere resolverlo.
+- ~~La observación sobre `.board-card-actions` (oculto en desktop sin
+  hover-reveal)~~ — **resuelta 2026-08-11** vía hotfix a pedido del
+  Ingeniero Jefe: pasa a `display: flex` por defecto, igual que los íconos
+  de `.task-item`. Beneficia también a mover/eliminar, no solo a editar.
 - **Hallazgo de alcance mayor, fuera de esta feature:** al revisar
   `CLAUDE.md` para esta validación, la sección "Categorías actuales
   (hardcodeadas)" y el modelo de datos documentado ahí siguen describiendo
