@@ -225,7 +225,9 @@ No hay framework de estado. El estado vive en variables de módulo y `render()` 
 | Función | Qué hace |
 |---|---|
 | `render()` | Dispatcher según `viewMode` (`'board'` / `'focus'` / `'list'`); actualiza contadores y botón "limpiar" antes de delegar en `renderBoard()`/`renderFocus()`/`renderList()` |
-| `renderFocus()` | Vista Focus — hoy es un placeholder ("en construcción"), sin lógica de negocio; el comportamiento real es una feature futura |
+| `renderBoardColumnsHtml(visible)` | Genera el HTML de las 3 columnas (por hacer/haciendo/hecho) — compartida entre `renderBoard()` y `renderFocus()`, mismo template de columna/tarjeta en ambas vistas |
+| `renderBoard()` | Vista Tablero — 3 columnas en fila horizontal, carrusel + dots en mobile |
+| `renderFocus()` | Vista Focus — mismas 3 columnas que Tablero, reacomodadas en grid (por hacer arriba a todo el ancho, haciendo/hecho abajo 50/50); "hecho" con opacidad reducida. Drag & drop vía el mismo `initBoardDnd()` que Tablero, sin carrusel/dots |
 | `renderCatSelector()` | Genera los pills de categoría en el header para elegir categoría de nueva tarea |
 | `renderNavCats()` | Genera los botones de filtro de categoría en la nav |
 | `renderSettings()` | Genera la lista de categorías en la pantalla de ajustes |

@@ -1012,6 +1012,27 @@
       font-family: var(--font);
     }
 
+    /* ── Focus: backlog domina (fila superior, ancho completo), haciendo/hecho
+       secundarias (fila inferior, mitades iguales). Mismas columnas/tarjetas
+       que Tablero, solo cambia el arreglo espacial. ── */
+    .focus-board {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:
+        "todo todo"
+        "doing done";
+      gap: 16px;
+      padding: 1.5rem 1.5rem 5rem;
+      min-height: calc(100vh - 180px);
+    }
+
+    .focus-board [data-col-status="todo"]  { grid-area: todo; }
+    .focus-board [data-col-status="doing"] { grid-area: doing; }
+    .focus-board [data-col-status="done"]  { grid-area: done; }
+
+    /* Hecho con menos peso visual sin ocultarse — solo en Focus, Tablero no cambia */
+    .focus-board [data-col-status="done"] .board-card { opacity: 0.7; }
+
     /* Contenedor centrado del área de contenido en monitores anchos. Header (barra
        superior) y footer se dejan afuera a propósito — siguen a ancho completo,
        con su contenido anclado a los bordes de la ventana (patrón Apple). El
@@ -1021,7 +1042,8 @@
     @media (min-width: 1200px) {
       .add-row,
       nav,
-      .board {
+      .board,
+      .focus-board {
         max-width: 1200px;
         margin-left: auto;
         margin-right: auto;
@@ -1037,17 +1059,25 @@
         overflow-x: auto;
       }
 
-      .board-col {
+      .board .board-col {
         flex-shrink: 0;
         width: calc(100vw - 3rem);
         margin: 0 0.75rem;
         scroll-snap-align: start;
       }
 
-      .board-col:first-child { margin-left: 1.5rem; }
-      .board-col:last-child  { margin-right: 1.5rem; }
+      .board .board-col:first-child { margin-left: 1.5rem; }
+      .board .board-col:last-child  { margin-right: 1.5rem; }
 
       .board-dots { display: flex; }
+
+      .focus-board {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "todo"
+          "doing"
+          "done";
+      }
     }
   </style>
 </head>
@@ -1125,7 +1155,7 @@
       <div class="board-dot" data-col="1"></div>
       <div class="board-dot" data-col="2"></div>
     </div>
-    <div id="focus-view" style="display:none"></div>
+    <div id="focus-view" class="focus-board" style="display:none"></div>
   </main>
 
   <footer>
@@ -1504,9 +1534,8 @@ function render() {
     document.getElementById('board-dots').style.display = '';
     renderBoard();
   } else if (viewMode === 'focus') {
-    mainEl.classList.remove('board-mode');
-    if (boardDndController) { boardDndController.abort(); boardDndController = null; }
-    if (dotsController)     { dotsController.abort();     dotsController     = null; }
+    mainEl.classList.add('board-mode');
+    if (dotsController) { dotsController.abort(); dotsController = null; }
     document.getElementById('focus-view').style.display = '';
     renderFocus();
   } else {
@@ -1641,30 +1670,11 @@ const SVG_NEXT = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" st
 const SVG_DEL  = `<svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>`;
 const SVG_EDIT = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 
-function renderFocus() {
-  document.getElementById('focus-view').innerHTML =
-    `<div class="empty">el modo focus está en construcción.</div>`;
-}
-
-function renderBoard() {
-  if (boardDndController) boardDndController.abort();
-  if (dotsController)     dotsController.abort();
-
-  const visible = tasks.filter(t => catFilter ? t.cat === catFilter : true);
-  const board = document.getElementById('board');
-
-  // Sin tareas visibles: no hay nada para arrastrar — un solo mensaje, no 3 drop zones
-  if (!visible.length) {
-    const catName = catFilter ? categories.find(c => c.id === catFilter)?.name : null;
-    board.innerHTML = `<div class="board-empty-filter">${catName ? `Sin tareas en ${escHtml(catName)}` : 'Sin tareas'}</div>`;
-    document.getElementById('board-dots').style.display = 'none';
-    return;
-  }
-
+function renderBoardColumnsHtml(visible) {
   const cols = { todo: [], doing: [], done: [] };
   visible.forEach(t => cols[getTaskStatus(t)].push(t));
 
-  board.innerHTML = COL_ORDER.map(status => {
+  return COL_ORDER.map(status => {
     const items   = cols[status];
     const isEmpty = items.length === 0;
     const cards = items.length
@@ -1694,9 +1704,42 @@ function renderBoard() {
         <div class="board-col-body">${cards}</div>
       </div>`;
   }).join('');
+}
 
+function renderBoard() {
+  if (boardDndController) boardDndController.abort();
+  if (dotsController)     dotsController.abort();
+
+  const visible = tasks.filter(t => catFilter ? t.cat === catFilter : true);
+  const board = document.getElementById('board');
+
+  // Sin tareas visibles: no hay nada para arrastrar — un solo mensaje, no 3 drop zones
+  if (!visible.length) {
+    const catName = catFilter ? categories.find(c => c.id === catFilter)?.name : null;
+    board.innerHTML = `<div class="board-empty-filter">${catName ? `Sin tareas en ${escHtml(catName)}` : 'Sin tareas'}</div>`;
+    document.getElementById('board-dots').style.display = 'none';
+    return;
+  }
+
+  board.innerHTML = renderBoardColumnsHtml(visible);
   initBoardDnd(board);
   initMobileDots(board);
+}
+
+function renderFocus() {
+  if (boardDndController) boardDndController.abort();
+
+  const visible = tasks.filter(t => catFilter ? t.cat === catFilter : true);
+  const focusEl = document.getElementById('focus-view');
+
+  if (!visible.length) {
+    const catName = catFilter ? categories.find(c => c.id === catFilter)?.name : null;
+    focusEl.innerHTML = `<div class="board-empty-filter">${catName ? `Sin tareas en ${escHtml(catName)}` : 'Sin tareas'}</div>`;
+    return;
+  }
+
+  focusEl.innerHTML = renderBoardColumnsHtml(visible);
+  initBoardDnd(focusEl);
 }
 
 function initBoardDnd(board) {
