@@ -213,7 +213,7 @@ let unsubCats       = null   // función para cancelar listener de categorías
 let categoriesReady = false  // true después del primer snapshot de categorías
 let editingCatId    = null   // catId en edición inline, 'new' si se está creando, null si ninguno
 let editingTaskId   = null   // taskId en edición inline, null si ninguna
-let viewMode        = localStorage.getItem('viewMode') || 'board'  // 'board' | 'focus' | 'list' — persiste entre sesiones
+let viewMode        = localStorage.getItem('viewMode') || 'list'  // 'board' | 'focus' | 'list' — persiste entre sesiones
 ```
 
 No hay framework de estado. El estado vive en variables de módulo y `render()` recalcula todo desde `tasks` con los filtros activos.

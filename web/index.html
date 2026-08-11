@@ -1107,9 +1107,9 @@
       <h1>reMynder <span id="hcount"></span></h1>
       <div class="user-info">
         <div class="view-switch" id="view-switch">
-          <button class="view-switch-btn" data-view="board">Tablero</button>
-          <button class="view-switch-btn" data-view="focus">Focus</button>
           <button class="view-switch-btn" data-view="list">Lista</button>
+          <button class="view-switch-btn" data-view="board">Tablero</button>
+          <button class="view-switch-btn" data-view="focus">Foco</button>
         </div>
         <button class="theme-btn" id="theme-btn" aria-label="Cambiar tema"></button>
         <button class="theme-btn" id="settings-btn" aria-label="Ajustes">
@@ -1220,7 +1220,7 @@ let unsubCats       = null;
 let categoriesReady = false;
 let editingCatId    = null;
 let editingTaskId   = null;
-let viewMode           = localStorage.getItem('viewMode') || 'board';
+let viewMode           = localStorage.getItem('viewMode') || 'list';
 let dragTaskId         = null;
 let boardDndController = null;
 let dotsController     = null;
