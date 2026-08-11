@@ -157,6 +157,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      row-gap: 8px;
       margin-bottom: 1rem;
     }
 
@@ -172,7 +174,42 @@
     .user-info {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
       gap: 8px;
+    }
+
+    /* ── Selector de vista unificado (Tablero | Focus | Lista) ──
+       Componente distinto de .nav-btn a propósito — no comparte clase ni
+       selector con las píldoras de filtro de categoría/estado. */
+    .view-switch {
+      display: flex;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: 9px;
+      padding: 3px;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .view-switch-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 400;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .view-switch-btn.active {
+      background: var(--accent);
+      color: var(--accent-contrast);
+      font-weight: 500;
     }
 
     .avatar {
@@ -1039,6 +1076,11 @@
     <div class="header-top">
       <h1>reMynder <span id="hcount"></span></h1>
       <div class="user-info">
+        <div class="view-switch" id="view-switch">
+          <button class="view-switch-btn" data-view="board">Tablero</button>
+          <button class="view-switch-btn" data-view="focus">Focus</button>
+          <button class="view-switch-btn" data-view="list">Lista</button>
+        </div>
         <button class="theme-btn" id="theme-btn" aria-label="Cambiar tema"></button>
         <button class="theme-btn" id="settings-btn" aria-label="Ajustes">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1073,8 +1115,6 @@
     <button class="nav-btn" id="f-done">Completadas</button>
     <div class="sep" id="status-sep"></div>
     <!-- filtros de categoría renderizados dinámicamente por renderNavCats() -->
-    <div class="sep"></div>
-    <button class="nav-btn" id="view-toggle-btn">tablero</button>
   </nav>
 
   <main>
@@ -1085,6 +1125,7 @@
       <div class="board-dot" data-col="1"></div>
       <div class="board-dot" data-col="2"></div>
     </div>
+    <div id="focus-view" style="display:none"></div>
   </main>
 
   <footer>
@@ -1149,7 +1190,7 @@ let unsubCats       = null;
 let categoriesReady = false;
 let editingCatId    = null;
 let editingTaskId   = null;
-let viewMode           = localStorage.getItem('viewMode') || 'list';
+let viewMode           = localStorage.getItem('viewMode') || 'board';
 let dragTaskId         = null;
 let boardDndController = null;
 let dotsController     = null;
@@ -1452,18 +1493,26 @@ function render() {
   document.getElementById('clear-btn').style.display = done > 0 ? 'inline-block' : 'none';
 
   const mainEl = document.querySelector('#app main');
+  document.getElementById('board').style.display      = 'none';
+  document.getElementById('board-dots').style.display  = 'none';
+  document.getElementById('task-list').style.display   = 'none';
+  document.getElementById('focus-view').style.display  = 'none';
+
   if (viewMode === 'board') {
     mainEl.classList.add('board-mode');
-    document.getElementById('task-list').style.display = 'none';
     document.getElementById('board').style.display = '';
     document.getElementById('board-dots').style.display = '';
     renderBoard();
+  } else if (viewMode === 'focus') {
+    mainEl.classList.remove('board-mode');
+    if (boardDndController) { boardDndController.abort(); boardDndController = null; }
+    if (dotsController)     { dotsController.abort();     dotsController     = null; }
+    document.getElementById('focus-view').style.display = '';
+    renderFocus();
   } else {
     mainEl.classList.remove('board-mode');
     if (boardDndController) { boardDndController.abort(); boardDndController = null; }
     if (dotsController)     { dotsController.abort();     dotsController     = null; }
-    document.getElementById('board').style.display = 'none';
-    document.getElementById('board-dots').style.display = 'none';
     document.getElementById('task-list').style.display = '';
     renderList();
   }
@@ -1591,6 +1640,11 @@ const SVG_PREV = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" st
 const SVG_NEXT = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
 const SVG_DEL  = `<svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>`;
 const SVG_EDIT = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+
+function renderFocus() {
+  document.getElementById('focus-view').innerHTML =
+    `<div class="empty">el modo focus está en construcción.</div>`;
+}
 
 function renderBoard() {
   if (boardDndController) boardDndController.abort();
@@ -1726,22 +1780,22 @@ function initMobileDots(board) {
   });
 }
 
-function toggleViewMode() {
-  viewMode = viewMode === 'list' ? 'board' : 'list';
+function setViewMode(mode) {
+  viewMode = mode;
   localStorage.setItem('viewMode', viewMode);
-  updateViewBtn();
+  updateViewSwitch();
   render();
 }
 
-function updateViewBtn() {
-  const btn    = document.getElementById('view-toggle-btn');
-  const isBoard = viewMode === 'board';
-  btn.textContent = isBoard ? 'lista' : 'tablero';
-  btn.classList.toggle('active', isBoard);
-  ['f-all','f-pending','f-done'].forEach(id => {
-    document.getElementById(id).style.display = isBoard ? 'none' : '';
+function updateViewSwitch() {
+  document.querySelectorAll('.view-switch-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === viewMode);
   });
-  document.getElementById('status-sep').style.display = isBoard ? 'none' : '';
+  const isList = viewMode === 'list';
+  ['f-all', 'f-pending', 'f-done'].forEach(id => {
+    document.getElementById(id).style.display = isList ? '' : 'none';
+  });
+  document.getElementById('status-sep').style.display = isList ? '' : 'none';
 }
 
 // ── Dynamic renders ───────────────────────────────────────────────
@@ -1787,14 +1841,12 @@ function renderNavCats() {
   const nav = document.querySelector('nav');
   if (!nav) return;
   nav.querySelectorAll('[data-cat-filter]').forEach(el => el.remove());
-  const viewToggleBtn = document.getElementById('view-toggle-btn');
-  const refEl = viewToggleBtn.previousElementSibling; // sep before view toggle
   categories.forEach(cat => {
     const btn = document.createElement('button');
     btn.className = `nav-btn cat-pill cat-p${cat.colorIndex}${catFilter === cat.id ? ' active' : ''}`;
     btn.dataset.catFilter = cat.id;
     btn.textContent = cat.name; // textContent — seguro contra XSS
-    nav.insertBefore(btn, refEl);
+    nav.appendChild(btn);
   });
 }
 
@@ -2009,8 +2061,10 @@ document.getElementById('categories-list').addEventListener('click', async e => 
   }
 });
 
-document.getElementById('view-toggle-btn').addEventListener('click', toggleViewMode);
-updateViewBtn();
+document.querySelectorAll('.view-switch-btn').forEach(btn => {
+  btn.addEventListener('click', () => setViewMode(btn.dataset.view));
+});
+updateViewSwitch();
 
 // ── Theme toggle ─────────────────────────────────────────────────
 const SUN  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;

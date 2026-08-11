@@ -213,6 +213,7 @@ let unsubCats       = null   // función para cancelar listener de categorías
 let categoriesReady = false  // true después del primer snapshot de categorías
 let editingCatId    = null   // catId en edición inline, 'new' si se está creando, null si ninguno
 let editingTaskId   = null   // taskId en edición inline, null si ninguna
+let viewMode        = localStorage.getItem('viewMode') || 'board'  // 'board' | 'focus' | 'list' — persiste entre sesiones
 ```
 
 No hay framework de estado. El estado vive en variables de módulo y `render()` recalcula todo desde `tasks` con los filtros activos.
@@ -223,7 +224,8 @@ No hay framework de estado. El estado vive en variables de módulo y `render()` 
 
 | Función | Qué hace |
 |---|---|
-| `render()` | Renderiza la lista de tareas según filtros activos; actualiza contadores y botón "limpiar" |
+| `render()` | Dispatcher según `viewMode` (`'board'` / `'focus'` / `'list'`); actualiza contadores y botón "limpiar" antes de delegar en `renderBoard()`/`renderFocus()`/`renderList()` |
+| `renderFocus()` | Vista Focus — hoy es un placeholder ("en construcción"), sin lógica de negocio; el comportamiento real es una feature futura |
 | `renderCatSelector()` | Genera los pills de categoría en el header para elegir categoría de nueva tarea |
 | `renderNavCats()` | Genera los botones de filtro de categoría en la nav |
 | `renderSettings()` | Genera la lista de categorías en la pantalla de ajustes |
@@ -333,6 +335,7 @@ Centralizados al final del módulo JS. Se usa **delegación de eventos** donde l
 | `#categories-list` | `data-action`, `data-id`, `data-color` | edit-cat / delete-cat / confirm-cat / cancel-cat / select-color |
 | `nav` | `data-cat-filter` | setCatFilter |
 | `#cat-selector` | `data-cat` | selectCat |
+| `.view-switch-btn` (uno por botón, no delegado) | `data-view` | `setViewMode('board' \| 'focus' \| 'list')` |
 
 ---
 
