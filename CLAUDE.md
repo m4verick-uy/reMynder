@@ -177,11 +177,10 @@ Cada usuario solo puede leer y escribir sus propias tareas. Esta regla NO debe r
 Estas son áreas de mejora conocidas y aceptadas. No son bugs, son decisiones de diseño iniciales:
 
 1. **Categorías hardcodeadas** — agregar una nueva requiere cambios en JS, CSS y HTML
-2. **Sin edición de tareas** — solo agregar, completar, eliminar
-3. **Sin orden personalizable** — siempre por `createdAt` ascendente
-4. **Sin paginación** — todas las tareas se cargan y renderizan juntas
-5. **Render completo** — cada cambio re-renderiza toda la lista
-6. **Todo en un archivo** — `index.html` contiene HTML + CSS + JS
+2. **Sin orden personalizable** — siempre por `createdAt` ascendente
+3. **Sin paginación** — todas las tareas se cargan y renderizan juntas
+4. **Render completo** — cada cambio re-renderiza toda la lista
+5. **Todo en un archivo** — `index.html` contiene HTML + CSS + JS
 
 ---
 

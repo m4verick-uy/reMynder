@@ -185,6 +185,7 @@ Ambos listeners se cancelan en logout. Las variables `unsubCats` y `unsubTasks` 
 |---|---|---|
 | `addTask()` | `addDoc` | Lee el input, usa `selectedCat` como categoría, escribe en Firestore |
 | `toggleTask(id)` | `updateDoc` | Invierte el campo `done` |
+| `updateTask(id, text, cat)` | `updateDoc` | Actualiza `text` y `cat`; valida que el texto no esté vacío. No toca `done`/`status`/`createdAt` |
 | `deleteTask(id)` | `deleteDoc` | Elimina el documento |
 | `clearDone()` | `writeBatch` | Elimina todas las tareas con `done: true` en una sola operación atómica |
 
@@ -211,6 +212,7 @@ let unsubTasks      = null   // función para cancelar listener de tareas
 let unsubCats       = null   // función para cancelar listener de categorías
 let categoriesReady = false  // true después del primer snapshot de categorías
 let editingCatId    = null   // catId en edición inline, 'new' si se está creando, null si ninguno
+let editingTaskId   = null   // taskId en edición inline, null si ninguna
 ```
 
 No hay framework de estado. El estado vive en variables de módulo y `render()` recalcula todo desde `tasks` con los filtros activos.
@@ -226,6 +228,8 @@ No hay framework de estado. El estado vive en variables de módulo y `render()` 
 | `renderNavCats()` | Genera los botones de filtro de categoría en la nav |
 | `renderSettings()` | Genera la lista de categorías en la pantalla de ajustes |
 | `renderCatForm(id, name, colorIndex)` | Genera el formulario inline de crear/editar categoría |
+| `renderTaskForm(id, text, cat)` | Genera el formulario inline de editar tarea (texto + picker de categoría), usado tanto en lista como en Board |
+| `renderCatPicker(currentCatId)` | Helper de `renderTaskForm`: lista de categorías seleccionables dentro del form de edición de tarea |
 | `getCatBadge(catId)` | Helper que devuelve el HTML del badge de una tarea (busca en `categories[]`) |
 
 El render es completo cada vez (no diff). Funciona bien dado el volumen esperado de tareas.
@@ -324,7 +328,8 @@ Centralizados al final del módulo JS. Se usa **delegación de eventos** donde l
 
 | Contenedor | Datos leídos | Acción |
 |---|---|---|
-| `#task-list` | `data-action`, `data-id` | toggle / delete tarea |
+| `#task-list` | `data-action`, `data-id` | toggle / delete / edit-task / cancel-task / select-task-cat / confirm-task |
+| `#board` | `data-action`, `data-id`, `data-status` | move-prev / move-next / delete / edit-task / cancel-task / select-task-cat / confirm-task (además de drag & drop nativo para mover entre columnas) |
 | `#categories-list` | `data-action`, `data-id`, `data-color` | edit-cat / delete-cat / confirm-cat / cancel-cat / select-color |
 | `nav` | `data-cat-filter` | setCatFilter |
 | `#cat-selector` | `data-cat` | selectCat |
@@ -388,7 +393,6 @@ El `apiKey` de Firebase para apps web **no es un secreto**. La seguridad está e
 
 ## Limitaciones conocidas (deuda técnica)
 
-- **Sin edición de tareas**: solo se puede agregar, completar y eliminar.
 - **Sin orden personalizable**: las tareas siempre se muestran por fecha de creación.
 - **Sin paginación**: si el usuario tiene muchas tareas, todas se cargan y renderizan.
 - **Render completo**: cada cambio re-renderiza toda la lista (no diff/virtual DOM).

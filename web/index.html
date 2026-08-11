@@ -499,6 +499,56 @@
 
     .del-btn:hover { color: var(--accent); }
 
+    /* ── Form de edición de tarea (lista y board) ── */
+    .task-item-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 0.5px solid var(--border-card);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+    }
+
+    .task-form-input {
+      width: 100%;
+      height: 36px;
+      padding: 0 12px;
+      border: 0.5px solid var(--border-card);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      outline: none;
+      transition: box-shadow 0.15s;
+    }
+    .task-form-input::placeholder { color: var(--muted); }
+    .task-form-input:focus { box-shadow: 0 0 0 1.5px var(--accent); }
+
+    .task-cat-picker {
+      display: flex;
+      flex-direction: column;
+      max-height: 160px;
+      overflow-y: auto;
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+    }
+
+    .task-form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+
+    .task-error {
+      font-size: 12px;
+      font-family: var(--font);
+      color: var(--p3);
+    }
+
     footer {
       position: fixed;
       bottom: 0;
@@ -1100,6 +1150,7 @@ let unsubTasks      = null;
 let unsubCats       = null;
 let categoriesReady = false;
 let editingCatId    = null;
+let editingTaskId   = null;
 let viewMode           = localStorage.getItem('viewMode') || 'list';
 let dragTaskId         = null;
 let boardDndController = null;
@@ -1136,6 +1187,7 @@ onAuthStateChanged(auth, user => {
     selectedCat     = null;
     categoriesReady = false;
     editingCatId    = null;
+    editingTaskId   = null;
   }
 });
 
@@ -1243,6 +1295,22 @@ async function deleteTask(id) {
   const user = auth.currentUser;
   if (!user) return;
   await deleteDoc(doc(db, 'users', user.uid, 'tasks', id));
+}
+
+async function updateTask(id, text, cat) {
+  const trimmed = text.trim();
+  if (!trimmed) return { error: 'El texto no puede estar vacío.' };
+  const user = auth.currentUser;
+  if (!user) return;
+  try {
+    await updateDoc(doc(db, 'users', user.uid, 'tasks', id), {
+      text: trimmed, cat
+    });
+    editingTaskId = null;
+  } catch (err) {
+    console.error('updateTask error:', err);
+    return { error: 'Error al actualizar la tarea.' };
+  }
 }
 
 async function clearDone() {
@@ -1418,7 +1486,7 @@ function renderList() {
     return;
   }
 
-  list.innerHTML = visible.map(t => `
+  list.innerHTML = visible.map(t => t.id === editingTaskId ? renderTaskForm(t.id, t.text, t.cat) : `
     <div class="task-item ${t.done ? 'done' : ''}">
       <button class="check-btn ${t.done ? 'done' : ''}" data-action="toggle" data-id="${t.id}" aria-label="${t.done ? 'Marcar pendiente' : 'Completar'}">
         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1427,6 +1495,12 @@ function renderList() {
       </button>
       <span class="task-text ${t.done ? 'done' : ''}">${escHtml(t.text)}</span>
       ${getCatBadge(t.cat)}
+      <button class="icon-btn" data-action="edit-task" data-id="${t.id}" aria-label="Editar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+      </button>
       <button class="del-btn" data-action="delete" data-id="${t.id}" aria-label="Eliminar">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
           <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
@@ -1434,6 +1508,80 @@ function renderList() {
       </button>
     </div>
   `).join('');
+}
+
+function renderCatPicker(currentCatId) {
+  return categories.map(cat => `
+    <button class="cat-menu-item${cat.id === currentCatId ? ' selected' : ''}" type="button"
+            data-action="select-task-cat" data-cat="${cat.id}">
+      <span class="cat-dot cat-p${cat.colorIndex}"></span>
+      <span class="cat-menu-name">${escHtml(cat.name)}</span>
+    </button>
+  `).join('');
+}
+
+function renderTaskForm(id, currentText, currentCat) {
+  return `
+    <div class="task-item-form" data-form-id="${id}">
+      <input class="task-form-input" type="text" placeholder="Texto de la tarea"
+             value="${escHtml(currentText)}" data-form-input autocomplete="off" />
+      <div class="task-cat-picker" data-form-id="${id}">${renderCatPicker(currentCat)}</div>
+      <div class="task-form-actions">
+        <button class="icon-btn confirm-btn" data-action="confirm-task" data-id="${id}" aria-label="Confirmar">
+          <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="2,6 5,9 10,3"/>
+          </svg>
+        </button>
+        <button class="icon-btn" data-action="cancel-task" aria-label="Cancelar">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function startEditTask(id) {
+  editingTaskId = id;
+  render();
+  const input = document.querySelector('#task-list [data-form-input], #board [data-form-input]');
+  if (input) { input.focus(); input.select(); }
+}
+
+function cancelEditTask() {
+  editingTaskId = null;
+  render();
+}
+
+function selectTaskCat(btn) {
+  const picker = btn.closest('[data-form-id]');
+  if (!picker) return;
+  picker.querySelectorAll('.cat-menu-item').forEach(item => {
+    item.classList.toggle('selected', item === btn);
+  });
+}
+
+async function confirmEditTask(btn) {
+  const formEl = btn.closest('.task-item-form');
+  if (!formEl) return;
+  const input       = formEl.querySelector('[data-form-input]');
+  const selectedCat = formEl.querySelector('.cat-menu-item.selected');
+  const text = input ? input.value : '';
+  const cat  = selectedCat ? selectedCat.dataset.cat : null;
+
+  const result = await updateTask(btn.dataset.id, text, cat);
+  if (result?.error) {
+    let errEl = formEl.querySelector('.task-error');
+    if (!errEl) {
+      errEl = document.createElement('div');
+      errEl.className = 'task-error';
+      formEl.appendChild(errEl);
+    }
+    errEl.textContent = result.error;
+    return;
+  }
+  render();
 }
 
 const COL_ORDER   = ['todo', 'doing', 'done'];
@@ -1444,6 +1592,7 @@ const NEXT_STATUS = { todo: 'doing', doing: 'done', done: null };
 const SVG_PREV = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 const SVG_NEXT = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
 const SVG_DEL  = `<svg width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>`;
+const SVG_EDIT = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 
 function renderBoard() {
   if (boardDndController) boardDndController.abort();
@@ -1467,7 +1616,7 @@ function renderBoard() {
     const items   = cols[status];
     const isEmpty = items.length === 0;
     const cards = items.length
-      ? items.map(t => `
+      ? items.map(t => t.id === editingTaskId ? renderTaskForm(t.id, t.text, t.cat) : `
           <div class="board-card" draggable="true" data-id="${t.id}" data-status="${status}">
             <span class="board-card-text">${escHtml(t.text)}</span>
             <div class="board-card-footer">
@@ -1477,6 +1626,7 @@ function renderBoard() {
                         aria-label="Mover atrás" ${!PREV_STATUS[status] ? 'disabled' : ''}>${SVG_PREV}</button>
                 <button class="board-card-move-btn" data-action="move-next" data-id="${t.id}" data-status="${status}"
                         aria-label="Mover adelante" ${!NEXT_STATUS[status] ? 'disabled' : ''}>${SVG_NEXT}</button>
+                <button class="board-card-move-btn" data-action="edit-task" data-id="${t.id}" aria-label="Editar">${SVG_EDIT}</button>
                 <button class="board-card-del-btn" data-action="delete" data-id="${t.id}" aria-label="Eliminar">${SVG_DEL}</button>
               </div>
             </div>
@@ -1547,6 +1697,10 @@ function initBoardDnd(board) {
     if (action === 'move-prev' && PREV_STATUS[status]) moveTask(id, PREV_STATUS[status]);
     if (action === 'move-next' && NEXT_STATUS[status]) moveTask(id, NEXT_STATUS[status]);
     if (action === 'delete') deleteTask(id);
+    if (action === 'edit-task') startEditTask(id);
+    if (action === 'cancel-task') cancelEditTask();
+    if (action === 'select-task-cat') selectTaskCat(btn);
+    if (action === 'confirm-task') confirmEditTask(btn);
   }, { signal: sig });
 }
 
@@ -1763,6 +1917,10 @@ document.getElementById('task-list').addEventListener('click', e => {
   const { action, id } = btn.dataset;
   if (action === 'toggle') toggleTask(id);
   if (action === 'delete') deleteTask(id);
+  if (action === 'edit-task') startEditTask(id);
+  if (action === 'cancel-task') cancelEditTask();
+  if (action === 'select-task-cat') selectTaskCat(btn);
+  if (action === 'confirm-task') confirmEditTask(btn);
 });
 
 // Settings: navegación
@@ -1773,7 +1931,7 @@ document.getElementById('settings-back-btn').addEventListener('click', hideSetti
 document.getElementById('add-category-btn').addEventListener('click', () => {
   editingCatId = 'new';
   renderSettings();
-  const input = document.querySelector('[data-form-input]');
+  const input = document.querySelector('#categories-list [data-form-input]');
   if (input) input.focus();
 });
 
@@ -1786,7 +1944,7 @@ document.getElementById('categories-list').addEventListener('click', async e => 
   if (action === 'edit-cat') {
     editingCatId = id;
     renderSettings();
-    const input = document.querySelector('[data-form-input]');
+    const input = document.querySelector('#categories-list [data-form-input]');
     if (input) { input.focus(); input.select(); }
     return;
   }
