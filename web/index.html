@@ -1033,6 +1033,16 @@
     /* Hecho con menos peso visual sin ocultarse — solo en Focus, Tablero no cambia */
     .focus-board [data-col-status="done"] .board-card { opacity: 0.7; }
 
+    /* Por hacer domina pero no debe empujar haciendo/hecho fuera de vista:
+       altura tope ~4 tarjetas de una línea (81px c/u + gaps + padding propio
+       de .board-col-body, ver docs/research-scroll-focus-backlog.md), con
+       scroll interno propio a partir de ahí. Header de la zona queda afuera
+       del scroll (vive en .board-col-header, hermano de .board-col-body). */
+    .focus-board [data-col-status="todo"] .board-col-body {
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
     /* Contenedor centrado del área de contenido en monitores anchos. Header (barra
        superior) y footer se dejan afuera a propósito — siguen a ancho completo,
        con su contenido anclado a los bordes de la ventana (patrón Apple). El
