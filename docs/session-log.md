@@ -2,6 +2,36 @@
 
 ---
 
+## Sesión 2026-08-11 (Debian 12) — confirmación fix GIT_SSH_COMMAND
+**Entorno:** Debian 12 — topgun (x86_64)
+
+### Qué se hizo
+- Confirmado por el Ingeniero Jefe: el fix de `GIT_SSH_COMMAND` en el wrapper
+  (sesión 2026-07-29) funciona en una sesión de `claude` realmente nueva —
+  `git push`/`pull` por SSH ya no requieren el workaround manual
+- Nota para futuras verificaciones de fixes del wrapper: dentro de esta misma
+  conversación, antes de la confirmación, se intentó re-probar el fix y
+  seguía fallando — porque el proceso `claude` subyacente (`pts/2`, PID
+  177757) seguía siendo el mismo lanzado el 2026-07-29 a las 11:40, previo al
+  fix. Abrir una conversación nueva en Claude Code **no** relanza el proceso
+  del binario — hace falta cerrar la terminal/proceso y volver a abrirlo para
+  que el wrapper se ejecute de cero. Confirmado correcto recién en un proceso
+  realmente nuevo
+
+### Decisiones tomadas
+- Se da por cerrado el pendiente de la sesión 2026-07-29: el fix de
+  `GIT_SSH_COMMAND` en el wrapper queda confirmado como funcional
+
+### Pendiente para próxima sesión
+- [ ] Próxima feature del roadmap: edición de tareas o fechas de vencimiento
+
+### Estado del repo
+- Branch: develop (al día con `origin/develop`, working tree limpio)
+- Sin cambios de código de producto esta sesión — solo verificación de
+  entorno local
+
+---
+
 ## Sesión 2026-07-29 (Debian 12) — confirmación fix DNS/auto-update
 **Entorno:** Debian 12 — topgun (x86_64)
 
@@ -51,9 +81,9 @@
   lugares
 
 ### Pendiente para próxima sesión
-- [ ] Confirmar en una sesión de Claude Code nueva (lanzada después de este
+- [x] Confirmar en una sesión de Claude Code nueva (lanzada después de este
       fix) que `git push`/`pull` por SSH funciona sin el workaround manual de
-      `GIT_SSH_COMMAND`
+      `GIT_SSH_COMMAND` — **confirmado 2026-08-11, ver entrada siguiente**
 - [ ] Próxima feature del roadmap: edición de tareas o fechas de vencimiento
 
 ### Estado del repo
