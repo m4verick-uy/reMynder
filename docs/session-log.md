@@ -2,6 +2,78 @@
 
 ---
 
+## Sesión 2026-08-11 (Debian 12) — edición de tareas + selector de vista + Focus
+**Entorno:** Debian 12 — topgun (x86_64)
+**Duración aproximada:** sesión larga, múltiples features vía Orchestrator
+
+### Qué se hizo
+- **Feature: Edición de tareas** (texto y categoría, desde Lista y Board) —
+  factory completa (7 agentes). `updateTask()`, form inline reutilizando el
+  patrón de edición de categorías. Bug encontrado y corregido en el mismo
+  pase: colisión de `querySelector('[data-form-input]')` entre forms de
+  categoría y tarea. Commit `60131fe`.
+- **Hotfix**: mover/eliminar/editar visible en Board en desktop
+  (`.board-card-actions` estaba `display:none` sin hover-reveal, afectaba
+  también a mover/eliminar preexistentes). Commit `8d501bc`.
+- **Feature: Selector de vista unificado** (Tablero | Focus | Lista,
+  segmented control en el header) — reemplaza el toggle binario viejo.
+  Bloqueó el research: la vista "Focus" no existía, el Ingeniero Jefe
+  confirmó que se construye como shell sin comportamiento (llega en
+  feature aparte). Bug real encontrado y corregido: `renderNavCats()`
+  dependía del botón viejo como referencia de inserción, rompía en cada
+  snapshot de Firestore. Commit `cd60aad`.
+- **Feature: Layout de la vista Focus** — reutiliza el 100% del sistema de
+  columnas/tarjetas/drag&drop de Tablero (`initBoardDnd` reusado literal),
+  reacomodado en CSS grid (por hacer arriba full-width, haciendo/hecho
+  50/50 abajo, hecho con opacity 0.7). Refactor de `renderBoardColumnsHtml`
+  compartido entre Tablero y Focus. Corrección preventiva de scope de
+  selector CSS mobile (`.board-col` → `.board .board-col`) antes de que
+  llegara a ser bug. Commit `e7493bc`.
+- **Hotfix**: reorden del selector a Lista | Tablero | Foco, label
+  "Focus"→"Foco", default a 'list'. Commit `72ea0af`.
+- **Feature: Scroll interno en "Por hacer" de Focus** — `max-height: 380px`
+  + `overflow-y: auto`, valor derivado del box model real de `.board-card`
+  (~4 tarjetas), no un número inventado. 100% CSS, sin tocar JS. Commit
+  `85f4be6`.
+- Las 3 features completas pasaron por los 7 agentes de la factory
+  (research/stories/spec/build/test/validation, todos documentados en
+  `docs/`); los 2 hotfixes fueron flujo abreviado (solo Frontend Builder)
+- Merge `develop` → `main` confirmado por el Ingeniero Jefe después de cada
+  tramo de trabajo — producción al día en `85f4be6`
+
+### Decisiones tomadas
+- El Ingeniero Jefe pidió explícitamente (feedback guardado en memoria):
+  no volver a preguntar antes de commit+push a `develop` — es el
+  laboratorio del proyecto. Merge a `main` sigue requiriendo confirmación
+  explícita cada vez.
+- Patrón consolidado en esta sesión: cuando una feature nueva es "lo mismo
+  pero reacomodado" (caso Focus reusando Tablero), investigar primero
+  cuánto se puede compartir en vez de asumir que hace falta un componente
+  nuevo — evitó bugs de scope CSS y duplicación de lógica de drag & drop
+
+### Pendiente para próxima sesión
+- [ ] Comportamiento real de la vista Focus (hoy es solo layout/shell,
+      pendiente desde que se creó — el Ingeniero Jefe dijo que lo define
+      en una feature aparte)
+- [ ] Verificación visual/interactiva en navegador real de todo lo
+      construido esta sesión (mobile especialmente) — ninguna feature pudo
+      probarse en un navegador logueado en este entorno, todas quedaron
+      pendientes de prueba manual por el Ingeniero Jefe en el preview
+- [ ] Observación menor no resuelta: separador colgante (`#status-sep`) en
+      `<nav>` si el usuario borra todas sus categorías (ver
+      `docs/test-report-selector-vista.md`)
+- [ ] Observación menor no resuelta: especificidad CSS entre la opacidad de
+      "Hecho" en Focus y el estado `.dragging` (ver
+      `docs/test-report-layout-focus.md`)
+- [ ] Próxima feature del roadmap original: fechas de vencimiento
+
+### Estado del repo
+- Branch: develop (al día con `origin/develop`, working tree limpio)
+- Último commit: `85f4be6 feat: scroll interno en "Por hacer" de la vista Focus`
+- Deploy: ✅ producción — `main` mergeado y pusheado, al día con `develop`
+
+---
+
 ## Sesión 2026-08-11 (Debian 12) — confirmación fix GIT_SSH_COMMAND
 **Entorno:** Debian 12 — topgun (x86_64)
 
